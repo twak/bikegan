@@ -1,9 +1,9 @@
-CLASS='edges2shoes'  # facades, day2night, edges2shoes, edges2handbags, maps
+CLASS='facades6'  # facades, day2night, edges2shoes, edges2handbags, maps
 MODEL='bicycle_gan'
 CLASS=${1}
-GPU_ID=${2}
+GPU_ID=0
 DISPLAY_ID=$((GPU_ID*10+1))
-PORT=2005
+PORT=8097
 NZ=8
 
 
@@ -64,7 +64,7 @@ esac
 # command
 CUDA_VISIBLE_DEVICES=${GPU_ID} python ./train.py \
   --display_id ${DISPLAY_ID} \
-  --dataroot ./datasets/${CLASS} \
+  --dataroot /media/twak/8bc5e750-9a70-4180-8eee-ced2fbba6484/data/facades6 \
   --name ${NAME} \
   --model ${MODEL} \
   --display_port ${PORT} \

@@ -77,6 +77,7 @@ class BaseModel():
         self.criterionGAN = networks.GANLoss(
             mse_loss=not use_sigmoid, tensor=self.Tensor)
         self.criterionL1 = torch.nn.L1Loss()
+        self.criterionL2 = torch.nn.MSELoss()
         self.criterionZ = torch.nn.L1Loss()
 
         if opt.isTrain:

@@ -4,7 +4,17 @@ from collections import OrderedDict
 from torch.autograd import Variable
 import util.util as util
 from .base_model import BaseModel
+from torchvision import models
 
+try: # hacky patch to read london _xy weights from new verison of pytorch/cuda
+    torch._utils._rebuild_tensor_v2
+except AttributeError:
+    def _rebuild_tensor_v2(storage, storage_offset, size, stride, requires_grad, backward_hooks):
+        tensor = torch._utils._rebuild_tensor(storage, storage_offset, size, stride)
+        tensor.requires_grad = requires_grad
+        tensor._backward_hooks = backward_hooks
+        return tensor
+    torch._utils._rebuild_tensor_v2 = _rebuild_tensor_v2
 
 class BiCycleGANModel(BaseModel):
     def name(self):
@@ -20,6 +30,18 @@ class BiCycleGANModel(BaseModel):
         BaseModel.initialize(self, opt)
         self.init_data(opt, use_D=use_D, use_D2=use_D2, use_E=use_E, use_vae=True)
         self.skip = False
+
+        self.loadLondonXY()
+
+    def loadLondonXY(self):
+        print("loading london weights")
+        state = torch.load('./weights/london_xy_vgg19.tar')
+        self.lxy = models.vgg19 ( num_classes=int ( state['classes'] ) ).cuda()
+        self.lxy.load_state_dict(state['state_dict'])
+        self.lxy.eval()
+        for param in self.lxy.parameters():
+            param.requires_grad = False
+        print("finished loading london weights")
 
     def is_skip(self):
         return self.skip
@@ -110,8 +132,16 @@ class BiCycleGANModel(BaseModel):
         else:
             self.loss_G_L1 = 0.0
 
-        self.loss_G = self.loss_G_GAN + self.loss_G_GAN2 + self.loss_G_L1 + self.loss_kl
+        self.style_distance_distance = 0.1 * (
+            100 * (self.styleDist (self.fake_B_encoded  )- self.styleDist ( self.fake_B_random) ).pow(2).mean()  -
+            self.criterionL2( self.z_encoded, self.z_random ) ).abs()
+
+        self.loss_G = self.loss_G_GAN + self.loss_G_GAN2 + self.loss_G_L1 + self.loss_kl + self.style_distance_distance
         self.loss_G.backward(retain_graph=True)
+
+    def styleDist(self, a):
+        a = a[:, :, 10:254, 10:254]
+        return self.lxy(a)[:, :2]
 
     def update_D(self, data):
         self.set_requires_grad(self.netD, True)
@@ -171,6 +201,8 @@ class BiCycleGANModel(BaseModel):
         if self.opt.lambda_z > 0.0:
             z_L1 = self.loss_z_L1.data[0] if self.loss_z_L1 is not None else 0.0
             ret_dict['z_L1'] = z_L1
+
+        ret_dict['G_style'] = self.style_distance_distance.data[0]
 
         if self.opt.lambda_kl > 0.0:
             ret_dict['KL'] = self.loss_kl.data[0]

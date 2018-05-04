@@ -65,7 +65,7 @@ class AlignedDataset(BaseDataset):
                 'A_paths': AB_path, 'B_paths': AB_path}
 
     def __len__(self):
-        return len(self.AB_paths)
+        return len(self.AB_paths ) // 2 * 2
 
     def name(self):
         return 'AlignedDataset'
