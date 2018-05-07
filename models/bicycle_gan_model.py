@@ -31,7 +31,7 @@ class BiCycleGANModel(BaseModel):
         self.init_data(opt, use_D=use_D, use_D2=use_D2, use_E=use_E, use_vae=True)
         self.skip = False
 
-        self.loadLondonXY()
+        # self.loadLondonXY()
 
     def loadLondonXY(self):
         print("loading london weights")
@@ -45,6 +45,7 @@ class BiCycleGANModel(BaseModel):
 
     def is_skip(self):
         return self.skip
+
 
     def forward(self):
         # get real images
@@ -132,11 +133,15 @@ class BiCycleGANModel(BaseModel):
         else:
             self.loss_G_L1 = 0.0
 
-        self.style_distance_distance = 0.1 * (
-            100 * (self.styleDist (self.fake_B_encoded  )- self.styleDist ( self.fake_B_random) ).pow(2).mean()  -
-            self.criterionL2( self.z_encoded, self.z_random ) ).abs()
 
-        self.loss_G = self.loss_G_GAN + self.loss_G_GAN2 + self.loss_G_L1 + self.loss_kl + self.style_distance_distance
+
+
+        # self.style_distance_distance = 0.1 * (
+        #     100 * (self.styleDist (self.fake_B_encoded  )- self.styleDist ( self.fake_B_random) ).pow(2).mean()  -
+        #     self.criterionL2( self.z_encoded, self.z_random ) ).abs()
+
+        self.loss_G = self.loss_G_GAN + self.loss_G_GAN2 + self.loss_G_L1 + self.loss_kl
+        # self.loss_G = self.loss_G_GAN + self.loss_G_GAN2 + self.loss_G_L1 + self.loss_kl + self.style_distance_distance
         self.loss_G.backward(retain_graph=True)
 
     def styleDist(self, a):
