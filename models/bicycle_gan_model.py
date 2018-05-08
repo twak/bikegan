@@ -46,6 +46,7 @@ class BiCycleGANModel(BaseModel):
     def is_skip(self):
         return self.skip
 
+
     def forward(self):
         # get real images
         self.skip = self.opt.isTrain and self.input_A.size(0) < self.opt.batchSize
@@ -132,11 +133,15 @@ class BiCycleGANModel(BaseModel):
         else:
             self.loss_G_L1 = 0.0
 
-        self.style_distance_distance = 0.1 * (
-            100 * (self.styleDist (self.fake_B_encoded  )- self.styleDist ( self.fake_B_random) ).pow(2).mean()  -
-            self.criterionL2( self.z_encoded, self.z_random ) ).abs()
 
-        self.loss_G = self.loss_G_GAN + self.loss_G_GAN2 + self.loss_G_L1 + self.loss_kl + self.style_distance_distance
+
+
+        # self.style_distance_distance = 0.1 * (
+        #     100 * (self.styleDist (self.fake_B_encoded  )- self.styleDist ( self.fake_B_random) ).pow(2).mean()  -
+        #     self.criterionL2( self.z_encoded, self.z_random ) ).abs()
+
+        self.loss_G = self.loss_G_GAN + self.loss_G_GAN2 + self.loss_G_L1 + self.loss_kl
+        # self.loss_G = self.loss_G_GAN + self.loss_G_GAN2 + self.loss_G_L1 + self.loss_kl + self.style_distance_distance
         self.loss_G.backward(retain_graph=True)
 
     def styleDist(self, a):
