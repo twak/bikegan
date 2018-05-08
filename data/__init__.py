@@ -14,6 +14,9 @@ def CreateDataset(opt):
     if opt.dataset_mode == 'aligned':
         from data.aligned_dataset import AlignedDataset
         dataset = AlignedDataset()
+    if opt.dataset_mode == 'blur':
+        from data.blur_dataset import BlurDataset
+        dataset = BlurDataset()
     elif opt.dataset_mode == 'single':
         from data.single_dataset import SingleDataset
         dataset = SingleDataset()
