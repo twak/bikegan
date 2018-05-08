@@ -31,7 +31,7 @@ class BiCycleGANModel(BaseModel):
         self.init_data(opt, use_D=use_D, use_D2=use_D2, use_E=use_E, use_vae=True)
         self.skip = False
 
-        self.loadLondonXY()
+        # self.loadLondonXY()
 
     def loadLondonXY(self):
         print("loading london weights")

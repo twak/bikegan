@@ -6,7 +6,6 @@ from data.base_dataset import BaseDataset
 from data.image_folder import make_dataset
 from PIL import Image
 
-
 class AlignedDataset(BaseDataset):
     def initialize(self, opt):
         self.opt = opt
@@ -65,7 +64,10 @@ class AlignedDataset(BaseDataset):
                 'A_paths': AB_path, 'B_paths': AB_path}
 
     def __len__(self):
-        return len(self.AB_paths ) // 2 * 2
+        if self.opt.phase == 'val':
+            return len(self.AB_paths )
+        else:
+            return len(self.AB_paths ) // 2 * 2
 
     def name(self):
         return 'AlignedDataset'

@@ -1,13 +1,12 @@
-CLASS='facades6'  # facades, day2night, edges2shoes, edges2handbags, maps
+CLASS='bike3'  # facades, day2night, edges2shoes, edges2handbags, maps
 MODEL='bicycle_gan'
-CLASS=${1}
 GPU_ID=0
 DISPLAY_ID=$((GPU_ID*10+1))
 PORT=8097
 NZ=8
 
 
-CHECKPOINTS_DIR=../checkpoints_pub/${CLASS}/
+CHECKPOINTS_DIR=./checkpoints_pub/${CLASS}/
 DATE=`date '+%d_%m_%Y_%H'`
 NAME=${CLASS}_${MODEL}_${DATE}
 
@@ -21,7 +20,7 @@ INPUT_NC=3
 
 # dataset parameters
 case ${CLASS} in
-'facades')
+'bike3')
   NITER=200
   NITER_DECAY=200
   SAVE_EPOCH=25
@@ -64,7 +63,7 @@ esac
 # command
 CUDA_VISIBLE_DEVICES=${GPU_ID} python ./train.py \
   --display_id ${DISPLAY_ID} \
-  --dataroot /media/twak/8bc5e750-9a70-4180-8eee-ced2fbba6484/data/facades6 \
+  --dataroot /data \
   --name ${NAME} \
   --model ${MODEL} \
   --display_port ${PORT} \
