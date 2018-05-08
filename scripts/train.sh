@@ -1,4 +1,4 @@
-CLASS='bike3'  # facades, day2night, edges2shoes, edges2handbags, maps
+CLASS='roofs1'  # facades, day2night, edges2shoes, edges2handbags, maps
 MODEL='bicycle_gan'
 GPU_ID=0
 DISPLAY_ID=$((GPU_ID*10+1))
@@ -8,7 +8,7 @@ NZ=8
 
 CHECKPOINTS_DIR=./checkpoints_pub/${CLASS}/
 DATE=`date '+%d_%m_%Y_%H'`
-NAME=${CLASS}_${MODEL}_${DATE}
+NAME=${CLASS} #_${MODEL}_${DATE}
 
 
 # dataset
@@ -20,7 +20,7 @@ INPUT_NC=3
 
 # dataset parameters
 case ${CLASS} in
-'bike3')
+'roofs1')
   NITER=200
   NITER_DECAY=200
   SAVE_EPOCH=25

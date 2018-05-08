@@ -133,9 +133,6 @@ class BiCycleGANModel(BaseModel):
         else:
             self.loss_G_L1 = 0.0
 
-
-
-
         # self.style_distance_distance = 0.1 * (
         #     100 * (self.styleDist (self.fake_B_encoded  )- self.styleDist ( self.fake_B_random) ).pow(2).mean()  -
         #     self.criterionL2( self.z_encoded, self.z_random ) ).abs()
@@ -207,7 +204,7 @@ class BiCycleGANModel(BaseModel):
             z_L1 = self.loss_z_L1.data[0] if self.loss_z_L1 is not None else 0.0
             ret_dict['z_L1'] = z_L1
 
-        ret_dict['G_style'] = self.style_distance_distance.data[0]
+        # ret_dict['G_style'] = self.style_distance_distance.data[0]
 
         if self.opt.lambda_kl > 0.0:
             ret_dict['KL'] = self.loss_kl.data[0]
