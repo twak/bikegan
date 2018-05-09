@@ -197,6 +197,9 @@ def define_E(input_nc, output_nc, ndf, which_model_netE,
     elif which_model_netE == 'resnet_256':
         netE = E_ResNet(input_nc, output_nc, ndf, n_blocks=5, norm_layer=norm_layer,
                         nl_layer=nl_layer, gpu_ids=gpu_ids, vaeLike=vaeLike)
+    elif which_model_netE == 'resnet_512':
+        netE = E_ResNet(input_nc, output_nc, ndf, n_blocks=6, norm_layer=norm_layer,
+                        nl_layer=nl_layer, gpu_ids=gpu_ids, vaeLike=vaeLike)
     elif which_model_netE == 'conv_128':
         netE = E_NLayers(input_nc, output_nc, ndf, n_layers=4, norm_layer=norm_layer,
                          nl_layer=nl_layer, gpu_ids=gpu_ids, vaeLike=vaeLike)
