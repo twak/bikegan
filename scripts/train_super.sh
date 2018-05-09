@@ -1,10 +1,9 @@
-CLASS='roofs1'  # facades, day2night, edges2shoes, edges2handbags, maps
+CLASS='super2'
 MODEL='bicycle_gan'
 GPU_ID=0
 DISPLAY_ID=$((GPU_ID*10+1))
 PORT=8097
 NZ=8
-
 
 CHECKPOINTS_DIR=./checkpoints_pub/${CLASS}/
 DATE=`date '+%d_%m_%Y_%H'`
@@ -18,47 +17,10 @@ LOAD_SIZE=286
 FINE_SIZE=256
 INPUT_NC=3
 
-# dataset parameters
-case ${CLASS} in
-'roofs1')
-  NITER=200
-  NITER_DECAY=200
-  SAVE_EPOCH=25
-  DIRECTION='BtoA'
-  ;;
-'edges2shoes')
-  NITER=30
-  NITER_DECAY=30
-  LOAD_SIZE=256
-  SAVE_EPOCH=5
-  INPUT_NC=1
-  NO_FLIP='--no_flip'
-  ;;
-'edges2handbags')
-  NITER=15
-  NITER_DECAY=15
-  LOAD_SIZE=256
-  SAVE_EPOCH=5
-  INPUT_NC=1
-  ;;
-'maps')
-  NITER=200
-  NITER_DECAY=200
-  LOAD_SIZE=600
-  SAVE_EPOCH=25
-  DIRECTION='BtoA'
-  ;;
-'day2night')
-  NITER=50
-  NITER_DECAY=50
-  SAVE_EPOCH=10
-  ;;
-*)
-  echo 'WRONG category'${CLASS}
-  ;;
-esac
-
-
+NITER=200
+NITER_DECAY=200
+SAVE_EPOCH=25
+DIRECTION='BtoA'
 
 # command
 CUDA_VISIBLE_DEVICES=${GPU_ID} python ./train.py \
@@ -75,5 +37,6 @@ CUDA_VISIBLE_DEVICES=${GPU_ID} python ./train.py \
   --input_nc ${INPUT_NC} \
   --niter ${NITER} \
   --niter_decay ${NITER_DECAY} \
-  --use_dropout \
+  --use_dropout
+  --dataset_mode blur
 

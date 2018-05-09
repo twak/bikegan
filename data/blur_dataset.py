@@ -24,7 +24,7 @@ class BlurDataset(BaseDataset):
         A = A.resize( (self.opt.loadSize, self.opt.loadSize), Image.BICUBIC)
 
         B = A.resize((32, 32), Image.BICUBIC)
-        B += np.random.normal(0, 0.5, (32, 32, 3))
+        B += np.random.normal(0, 5, (32, 32, 3))
         B = transform.resize(B, A.size)
 
         w = A.size[1]
@@ -32,6 +32,7 @@ class BlurDataset(BaseDataset):
 
         A = transforms.ToTensor()(A)
         B = transforms.ToTensor()(B).float()
+        B= B.clamp(0,1)
 
         if self.center_crop:
             w_offset = int(round((w - self.opt.fineSize) / 2.0))
