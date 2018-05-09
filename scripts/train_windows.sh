@@ -38,4 +38,4 @@ CUDA_VISIBLE_DEVICES=${GPU_ID} python ./train.py \
   --niter ${NITER} \
   --niter_decay ${NITER_DECAY} \
   --use_dropout \
-  --blur_a 12
+  --blur_a 18
