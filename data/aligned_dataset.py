@@ -15,11 +15,21 @@ class AlignedDataset(BaseDataset):
         self.AB_paths = sorted(make_dataset(self.dir_AB))
         assert(opt.resize_or_crop == 'resize_and_crop')
 
+        if self.opt.blur_a > 0:
+            self.blurA = transforms.Compose ([
+                transforms.ToPILImage(),
+                transforms.Scale( ( self.opt.blur_a, self.opt.blur_a ) ),
+                transforms.Scale( ( self.opt.fineSize, self.opt.fineSize) ),
+                transforms.ToTensor()
+            ])
+
+
     def __getitem__(self, index):
         AB_path = self.AB_paths[index]
         AB = Image.open(AB_path).convert('RGB')
         AB = AB.resize(
             (self.opt.loadSize * 2, self.opt.loadSize), Image.BICUBIC)
+
         AB = transforms.ToTensor()(AB)
 
         w_total = AB.size(2)
@@ -33,9 +43,13 @@ class AlignedDataset(BaseDataset):
             h_offset = random.randint(0, max(0, h - self.opt.fineSize - 1))
 
         A = AB[:, h_offset:h_offset + self.opt.fineSize,
-               w_offset:w_offset + self.opt.fineSize]
+            w_offset:w_offset + self.opt.fineSize]
         B = AB[:, h_offset:h_offset + self.opt.fineSize,
-               w + w_offset:w + w_offset + self.opt.fineSize]
+            w + w_offset:w + w_offset + self.opt.fineSize]
+
+        if self.opt.blur_a > 0:
+            A = self.blurA(A)
+
         A = transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))(A)
         B = transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))(B)
 
@@ -51,6 +65,8 @@ class AlignedDataset(BaseDataset):
             idx = torch.LongTensor(idx)
             A = A.index_select(2, idx)
             B = B.index_select(2, idx)
+
+
 
         if input_nc == 1:
             tmp = A[0, ...] * 0.299 + A[1, ...] * 0.587 + A[2, ...] * 0.114
