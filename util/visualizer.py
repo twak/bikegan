@@ -121,7 +121,7 @@ class Visualizer():
         for k, v in errors.items():
             message += ', %s: %.3f' % (k, v)
 
-        print(message)
+        print(message + "\n")
         # write losses to text file as well
         with open(self.log_path, "a") as log_file:
             log_file.write(message)
