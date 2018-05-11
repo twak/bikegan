@@ -871,7 +871,7 @@ class Outernet(nn.Module):
 
         tmp = x3[0]
         h = self.colours.size(0)
-        layers = tmp[:h].unsqueeze(2) .bmm ( tmp[-h:].unsqueeze(1) ) # outer product
+        layers = tmp[:h].unsqueeze(2) .bmm ( tmp[-h:].unsqueeze(1) ) # outer products
 
         layers = layers.unsqueeze(1) * self.cm # to rgb
 
