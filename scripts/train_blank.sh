@@ -1,4 +1,4 @@
-CLASS='blank1'  # facades, day2night, edges2shoes, edges2handbags, maps
+CLASS='blank3'  # facades, day2night, edges2shoes, edges2handbags, maps
 
 RESULTS_DIR='./results/'$CLASS
 # G_PATH='/home/twak/code/bikegan/checkpoints/'$CLASS'/'$CLASS'/latest_net_G.pth'

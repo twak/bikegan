@@ -23,8 +23,10 @@ class BlurDataset(BaseDataset):
 
         A = A.resize( (self.opt.loadSize, self.opt.loadSize), Image.BICUBIC)
 
-        B = A.resize((32, 32), Image.BICUBIC)
-        B += np.random.normal(0, 5, (32, 32, 3))
+        small = random.randint(16, 64)
+
+        B = A.resize((small, small), Image.BICUBIC)
+        B += np.random.normal(0, random.randint(3, 10), (small, small, 3))
         B = transform.resize(B, A.size)
 
         w = A.size[1]

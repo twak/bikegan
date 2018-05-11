@@ -1,4 +1,4 @@
-CLASS='super2'
+CLASS='super3'
 MODEL='bicycle_gan'
 GPU_ID=0
 DISPLAY_ID=$((GPU_ID*10+1))
@@ -25,7 +25,8 @@ DIRECTION='BtoA'
 # command
 CUDA_VISIBLE_DEVICES=${GPU_ID} python ./train.py \
   --display_id ${DISPLAY_ID} \
-  --dataroot /data \
+  --dataroot /media/twak/8bc5e750-9a70-4180-8eee-ced2fbba6484/data/regent_style_8k \
+#  --dataroot /data \
   --name ${NAME} \
   --model ${MODEL} \
   --display_port ${PORT} \
