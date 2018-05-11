@@ -23,6 +23,7 @@ class BaseModel():
                                       which_model_netG=opt.which_model_netG,
                                       norm=opt.norm, nl=opt.nl, use_dropout=opt.use_dropout, init_type=opt.init_type,
                                       gpu_ids=self.gpu_ids, where_add=self.opt.where_add, upsample=opt.upsample)
+
         networks.print_network(self.netG)
         self.netD, self.netD2, self.netE = None, None, None
 

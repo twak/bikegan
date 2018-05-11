@@ -4,7 +4,7 @@ from torch.nn import init
 from torch.autograd import Variable
 import functools
 from torch.optim import lr_scheduler
-
+import numpy as np
 ###############################################################################
 # Functions
 ###############################################################################
@@ -140,6 +140,16 @@ def define_G(input_nc, output_nc, nz, ngf,
     elif which_model_netG == 'unet_256' and where_add == 'all':
         netG = G_Unet_add_all(input_nc, output_nc, nz, 8, ngf, norm_layer=norm_layer, nl_layer=nl_layer,
                               use_dropout=use_dropout, gpu_ids=gpu_ids, upsample=upsample)
+    elif which_model_netG == 'outernet' and where_add == 'all':
+        netG = Outernet(input_nc, [
+            [0,1,0],
+            [0,1,0],
+            [0,1,0],
+            [0,0,1],
+            [0,0,1],
+            [0,0,1],
+         ], nz, 8, ngf, norm_layer=norm_layer, nl_layer=nl_layer,
+                        use_dropout=use_dropout, gpu_ids=gpu_ids)
     else:
         raise NotImplementedError(
             'Generator model name [%s] is not recognized' % which_model_netG)
@@ -528,6 +538,9 @@ def upsampleLayer(inplanes, outplanes, upsample='basic', padding_type='zero'):
     if upsample == 'basic':
         upconv = [nn.ConvTranspose2d(
             inplanes, outplanes, kernel_size=4, stride=2, padding=1)]
+    elif upsample == 'outer':
+        upconv = [nn.ConvTranspose1d(
+            inplanes, outplanes, kernel_size=4, stride=2, padding=1)]
     elif upsample == 'bilinear':
         upconv = [nn.Upsample(scale_factor=2, mode='bilinear'),
                   nn.ReflectionPad2d(1),
@@ -815,6 +828,140 @@ class UnetBlock_with_z(nn.Module):
             x2 = self.submodule(x1, z)
             return torch.cat([self.up(x2), x], 1)
 
+class Outernet(nn.Module):
+
+    def __init__(self, input_nc, layer_cols, nz, num_downs, ngf=64,
+                 norm_layer=None, nl_layer=None, use_dropout=False, gpu_ids=[] ):
+
+        super(Outernet, self).__init__()
+
+        self.gpu_ids = gpu_ids
+        self.nz = nz
+        upsample = 'outer'
+
+        layers = np.array (layer_cols, dtype=np.float32 )
+        self.colours = Variable ( torch.FloatTensor( layers ) ).cuda()
+        self.cm = self.colours.unsqueeze(2).unsqueeze(2)
+        output_nc = layers.shape[0] * 2
+
+        # construct unet structure
+        unet_block = Outer_with_z(ngf * 8, ngf * 8, ngf * 8, nz, None, innermost=True,
+                                      norm_layer=norm_layer, nl_layer=nl_layer, upsample=upsample)
+        unet_block = Outer_with_z(ngf * 8, ngf * 8, ngf * 8, nz, unet_block,
+                                      norm_layer=norm_layer, nl_layer=nl_layer, use_dropout=use_dropout, upsample=upsample)
+        for i in range(num_downs - 6):
+            unet_block = Outer_with_z(ngf * 8, ngf * 8, ngf * 8, nz, unet_block,
+                                          norm_layer=norm_layer, nl_layer=nl_layer, use_dropout=use_dropout, upsample=upsample)
+        unet_block = Outer_with_z(ngf * 4, ngf * 4, ngf * 8, nz, unet_block,
+                                      norm_layer=norm_layer, nl_layer=nl_layer, upsample=upsample)
+        unet_block = Outer_with_z(ngf * 2, ngf * 2, ngf * 4, nz, unet_block,
+                                      norm_layer=norm_layer, nl_layer=nl_layer, upsample=upsample)
+        unet_block = Outer_with_z(
+            ngf, ngf, ngf * 2, nz, unet_block, norm_layer=norm_layer, nl_layer=nl_layer, upsample=upsample)
+        unet_block = Outer_with_z(input_nc, output_nc, ngf, nz, unet_block,
+                                      outermost=True, norm_layer=norm_layer, nl_layer=nl_layer, upsample=upsample)
+        self.model = unet_block
+
+    def forward(self, x, z):
+
+        x3 = self.model(x, z)
+
+        tmp = x3[0]
+        h = self.colours.size(0)
+        layers = tmp[:h].unsqueeze(2) .bmm ( tmp[-h:].unsqueeze(1) ) # outer product
+
+        layers = layers.unsqueeze(1) * self.cm # to rgb
+
+        layers = layers.sum(0).unsqueeze(0) # flatten colours
+
+        layers[:, 2] = layers[:,2] - layers[:,1] # remove windows from walls
+
+        layers = layers * 2 - 1 # normalized colour space
+
+        return layers
+
+
+class Outer_with_z(nn.Module):
+    def __init__(self, input_nc, outer_nc, inner_nc, nz=0,
+                 submodule=None, outermost=False, innermost=False,
+                 norm_layer=None, nl_layer=None, use_dropout=False, upsample='basic', padding_type='zero'):
+        super(Outer_with_z, self).__init__()
+        p = 0
+        downconv = []
+        if padding_type == 'reflect':
+            downconv += [nn.ReflectionPad2d(1)]
+        elif padding_type == 'replicate':
+            downconv += [nn.ReplicationPad2d(1)]
+        elif padding_type == 'zero':
+            p = 1
+        else:
+            raise NotImplementedError(
+                'padding [%s] is not implemented' % padding_type)
+
+        self.outermost = outermost
+        self.innermost = innermost
+        self.nz = nz
+        input_nc = input_nc + nz
+        downconv += [nn.Conv2d(input_nc, inner_nc,
+                               kernel_size=4, stride=2, padding=p)]
+        # downsample is different from upsample
+        downrelu = nn.LeakyReLU(0.2, True)
+        uprelu = nl_layer()
+
+        if outermost:
+            upconv = upsampleLayer(
+                inner_nc, outer_nc, upsample=upsample, padding_type=padding_type)
+            down = downconv
+            up = [uprelu] + upconv + [nn.Tanh()]
+        elif innermost:
+            upconv = upsampleLayer(
+                inner_nc, outer_nc, upsample=upsample, padding_type=padding_type)
+            down = [downrelu] + downconv
+            up = [uprelu] + upconv
+            if norm_layer is not None:
+                up += [norm_layer(outer_nc)]
+        else:
+            upconv = upsampleLayer(
+                inner_nc, outer_nc, upsample=upsample, padding_type=padding_type)
+            down = [downrelu] + downconv
+            if norm_layer is not None:
+                down += [norm_layer(inner_nc)]
+            up = [uprelu] + upconv
+
+            if norm_layer is not None:
+                up += [norm_layer(outer_nc)]
+
+            if use_dropout:
+                up += [nn.Dropout(0.5)]
+        self.down = nn.Sequential(*down)
+        self.submodule = submodule
+        self.up = nn.Sequential(*up)
+
+
+    def forward(self, x, z):
+        # print(x.size())
+        if self.nz > 0:
+            z_img = z.view(z.size(0), z.size(1), 1, 1).expand(
+                z.size(0), z.size(1), x.size(2), x.size(3))
+            x_and_z = torch.cat([x, z_img], 1)
+        else:
+            x_and_z = x
+
+        if self.outermost:
+            x1 = self.down(x_and_z)
+            x2 = self.submodule(x1, z)
+            x3 = self.up(x2)
+            return x3
+
+        elif self.innermost:
+            x1 = self.down(x_and_z).squeeze(3)
+            x2 = self.up(x1)
+            return x2 # torch.cat([x1, x], 1)
+        else:
+            x1 = self.down(x_and_z)
+            x2 = self.submodule(x1, z)
+            x3 = self.up(x2)
+            return x3 # torch.cat([self.up(x2), x], 1)
 
 class E_NLayers(nn.Module):
     def __init__(self, input_nc, output_nc=1, ndf=64, n_layers=3,
