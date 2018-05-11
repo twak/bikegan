@@ -182,6 +182,9 @@ def define_D(input_nc, ndf, which_model_netD,
     elif which_model_netD == 'basic_256_multi':
         netD = D_NLayersMulti(input_nc=input_nc, ndf=ndf, n_layers=3, norm_layer=norm_layer,
                               use_sigmoid=use_sigmoid, gpu_ids=gpu_ids, num_D=num_Ds)
+    elif which_model_netD == 'big_256_multi':
+        netD = D_NLayersMulti(input_nc=input_nc, ndf=ndf, n_layers=5, norm_layer=norm_layer,
+                              use_sigmoid=use_sigmoid, gpu_ids=gpu_ids, num_D=num_Ds)
     else:
         raise NotImplementedError(
             'Discriminator model name [%s] is not recognized' % which_model_netD)
@@ -910,7 +913,7 @@ class Outer_with_z(nn.Module):
 
         if outermost:
             upconv = upsampleLayer(
-                inner_nc, outer_nc, upsample=upsample, padding_type=padding_type)
+                3 * inner_nc, outer_nc, upsample=upsample, padding_type=padding_type)
             down = downconv
             up = [uprelu] + upconv + [nn.Tanh()]
         elif innermost:
@@ -922,7 +925,7 @@ class Outer_with_z(nn.Module):
                 up += [norm_layer(outer_nc)]
         else:
             upconv = upsampleLayer(
-                inner_nc, outer_nc, upsample=upsample, padding_type=padding_type)
+                3 * inner_nc, outer_nc, upsample=upsample, padding_type=padding_type)
             down = [downrelu] + downconv
             if norm_layer is not None:
                 down += [norm_layer(inner_nc)]
@@ -956,12 +959,14 @@ class Outer_with_z(nn.Module):
         elif self.innermost:
             x1 = self.down(x_and_z).squeeze(3)
             x2 = self.up(x1)
-            return x2 # torch.cat([x1, x], 1)
+            return torch.cat([x2, x.mean(2), x.mean(3)], 1)
         else:
             x1 = self.down(x_and_z)
             x2 = self.submodule(x1, z)
             x3 = self.up(x2)
-            return x3 # torch.cat([self.up(x2), x], 1)
+            # return x3 # torch.cat([self.up(x2), x], 1)
+            return torch.cat([x3, x.mean(2), x.mean(3)], 1)
+
 
 class E_NLayers(nn.Module):
     def __init__(self, input_nc, output_nc=1, ndf=64, n_layers=3,
