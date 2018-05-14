@@ -188,6 +188,9 @@ def define_D(input_nc, ndf, which_model_netD,
     elif which_model_netD == 'big_256_multi':
         netD = D_NLayersMulti(input_nc=input_nc, ndf=ndf, n_layers=5, norm_layer=norm_layer,
                               use_sigmoid=use_sigmoid, gpu_ids=gpu_ids, num_D=num_Ds)
+    elif which_model_netD == 'big_512_multi':
+        netD = D_NLayersMulti(input_nc=input_nc, ndf=ndf, n_layers=6, norm_layer=norm_layer,
+                              use_sigmoid=use_sigmoid, gpu_ids=gpu_ids, num_D=num_Ds)
     else:
         raise NotImplementedError(
             'Discriminator model name [%s] is not recognized' % which_model_netD)
