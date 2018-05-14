@@ -140,6 +140,9 @@ def define_G(input_nc, output_nc, nz, ngf,
     elif which_model_netG == 'unet_256' and where_add == 'all':
         netG = G_Unet_add_all(input_nc, output_nc, nz, 8, ngf, norm_layer=norm_layer, nl_layer=nl_layer,
                               use_dropout=use_dropout, gpu_ids=gpu_ids, upsample=upsample)
+    elif which_model_netG == 'big_unet_1' and where_add == 'all':
+        netG = G_Unet_add_all(input_nc, output_nc, nz, 9, ngf, norm_layer=norm_layer, nl_layer=nl_layer,
+                              use_dropout=use_dropout, gpu_ids=gpu_ids, upsample=upsample)
     elif which_model_netG == 'outernet' and where_add == 'all':
         netG = Outernet(input_nc, [
             [0,1,0],

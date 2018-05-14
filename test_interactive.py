@@ -66,15 +66,18 @@ class RunG(FileSystemEventHandler):
         dataset = data_loader.load_data()
 
         for i, data in enumerate(dataset):
-            self.model.set_input(data)
+            try:
+                self.model.set_input(data)
 
-            _, real_A, fake_B, real_B, _ = self.model.test_simple( z, encode_real_B=False)
+                _, real_A, fake_B, real_B, _ = self.model.test_simple( z, encode_real_B=False)
 
-            img_path = self.model.get_image_paths()
-            print('%04d: process image... %s' % (i, img_path))
+                img_path = self.model.get_image_paths()
+                print('%04d: process image... %s' % (i, img_path))
 
-            save_image( fake_B, "./output/%s/%s/%s" % (self.opt.name,name, os.path.basename(img_path[0]) ) )
-            save_image( real_A, "./output/%s/%s/%s_label" % (self.opt.name,name, os.path.basename(img_path[0]) ) )
+                save_image( fake_B, "./output/%s/%s/%s" % (self.opt.name,name, os.path.basename(img_path[0]) ) )
+                save_image( real_A, "./output/%s/%s/%s_label" % (self.opt.name,name, os.path.basename(img_path[0]) ) )
+            except Exception as e:
+                print(e)
 
         os.remove(go)
 
@@ -99,11 +102,11 @@ class RunE(FileSystemEventHandler):
         with open(go) as f:
             name = f.readlines()[0]
 
-        print("starting to process %s" % self.optE.name)
+        print("starting to process %s" % self.opt.name)
 
-        self.optE.dataroot = "./input/%s/" % self.optE.name
+        self.opt.dataroot = "./input/%s/" % self.opt.name
 
-        data_loader = CreateDataLoader(self.optE)
+        data_loader = CreateDataLoader(self.opt)
         dataset = data_loader.load_data()
 
         for i, data in enumerate(dataset):
@@ -114,7 +117,7 @@ class RunE(FileSystemEventHandler):
             img_path = self.model.get_image_paths()
             print('%04d: process image... %s' % (i, img_path))
 
-            outfile = "./output/%s/%s/%s" % (self.optE.name, name, "_".join([str (s) for s in z[0]]) )
+            outfile = "./output/%s/%s/%s" % (self.opt.name, name, "_".join([str (s) for s in z[0]]) )
             try:
                 os.makedirs(os.path.dirname(outfile), exist_ok=True)
             except:
@@ -124,7 +127,7 @@ class RunE(FileSystemEventHandler):
 
         os.remove(go)
 
-        rmrf('./input/%s/val/*' % self.optE.name)
+        rmrf('./input/%s/val/*' % self.opt.name)
 
 
 class Interactive():
@@ -167,7 +170,7 @@ class Interactive():
         os.makedirs(input_folder + "val", exist_ok=True)
         observer.schedule(RunG(self.model, self.optG), path=input_folder+"val/")
 
-        input_folder_e = './input/%s_e/' % self.optE.name
+        input_folder_e = './input/%s/' % self.optE.name
         os.makedirs(input_folder_e+"val", exist_ok=True)
         observer.schedule(RunE(self.model, self.optE), path=input_folder_e+"val/")
         observer.start()
@@ -181,9 +184,11 @@ class Interactive():
 
         observer.join()
 
-
 Interactive ("bike_2")
 Interactive ("roofs2", 512, 'resnet_512')
+Interactive ("super3")
+Interactive ("dows2")
+Interactive ("dows1")
 
 while True:
     time.sleep(600)
