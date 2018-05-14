@@ -17,18 +17,19 @@ LOAD_SIZE=400
 FINE_SIZE=256
 INPUT_NC=3
 
-NITER=200
-NITER_DECAY=200
+NITER=300
+NITER_DECAY=300
 SAVE_EPOCH=25
 DIRECTION='BtoA'
 
+#  --dataroot /media/twak/8bc5e750-9a70-4180-8eee-ced2fbba6484/data/regent_style_8k \
 # command
 CUDA_VISIBLE_DEVICES=${GPU_ID} python ./train.py \
   --display_id ${DISPLAY_ID} \
-  --dataroot /media/twak/8bc5e750-9a70-4180-8eee-ced2fbba6484/data/regent_style_8k \
-#  --dataroot /data \
+  --dataroot /data \
   --name ${NAME} \
   --model ${MODEL} \
+  --continue_train \
   --display_port ${PORT} \
   --which_direction ${DIRECTION} \
   --checkpoints_dir ${CHECKPOINTS_DIR} \
@@ -36,6 +37,7 @@ CUDA_VISIBLE_DEVICES=${GPU_ID} python ./train.py \
   --fineSize ${FINE_SIZE} \
   --nz ${NZ} \
   --input_nc ${INPUT_NC} \
+  --continue_train \
   --niter ${NITER} \
   --niter_decay ${NITER_DECAY} \
   --use_dropout \

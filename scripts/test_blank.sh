@@ -1,4 +1,4 @@
-CLASS='xxx'  # facades, day2night, edges2shoes, edges2handbags, maps
+CLASS='blank3'  # facades, day2night, edges2shoes, edges2handbags, maps
 
 RESULTS_DIR='./results/'$CLASS
 G_PATH='/home/twak/code/bikegan/checkpoints/'$CLASS'/'$CLASS'/latest_net_G.pth'
@@ -27,7 +27,8 @@ NITER_DECAY=200
 # command
 CUDA_VISIBLE_DEVICES=${GPU_ID} python ./test.py \
   --display_id ${DISPLAY_ID} \
-  --dataroot /media/twak/8bc5e750-9a70-4180-8eee-ced2fbba6484/data/blank1 \
+  --dataroot /data \
+#  --dataroot /media/twak/8bc5e750-9a70-4180-8eee-ced2fbba6484/data/blank1 \
   --results_dir ${RESULTS_DIR} \
   --name ${NAME} \
   --how_many 300 \

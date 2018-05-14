@@ -16,30 +16,13 @@ from watchdog.events import FileSystemEventHandler
 from PIL import Image
 
 import copy
+import _thread
 
-# options
-opt = TestOptions().parse()
-opt.nThreads = 1   # test code only supports nThreads=1
-opt.batchSize = 1   # test code only supports batchSize=1
-opt.serial_batches = True  # no shuffle
-
-opt.G_path = "./checkpoints/%s/latest_net_G.pth" % opt.name
-opt.E_path = "./checkpoints/%s/latest_net_E.pth" % opt.name
-
-opt.dataroot = "./input/%s/" % opt.name
-opt.no_flip = True
-
-optE = copy.deepcopy(opt)
-optE.dataroot = "./input/%s_e/" % opt.name
-optE.name = opt.name +"_e"
-
-model = create_model(opt)
-model.eval()
 
 def save_image(image_numpy, image_path):
 
     try:
-        os.mkdir(os.path.dirname(image_path))
+        os.makedirs(os.path.dirname(image_path), exist_ok=True)
     except:
         pass
 
@@ -58,6 +41,10 @@ def rmrf (file):
             os.remove(f)
 
 class RunG(FileSystemEventHandler):
+    def __init__(self, model, opt):
+        self.model = model
+        self.opt = opt
+
     def on_created(self, event): # when file is created
         # do something, eg. call your function to process the image
         print ("Got G event for file %s" % event.src_path)
@@ -75,26 +62,31 @@ class RunG(FileSystemEventHandler):
         zs = name.split("_")[2:]
         z = np.array ( [float(i) for i in zs], dtype = np.float32 )
 
-        data_loader = CreateDataLoader(opt)
+        data_loader = CreateDataLoader(self.opt)
         dataset = data_loader.load_data()
 
         for i, data in enumerate(dataset):
-            model.set_input(data)
+            self.model.set_input(data)
 
-            _, real_A, fake_B, real_B, _ = model.test_simple( z, encode_real_B=False)
+            _, real_A, fake_B, real_B, _ = self.model.test_simple( z, encode_real_B=False)
 
-            img_path = model.get_image_paths()
+            img_path = self.model.get_image_paths()
             print('%04d: process image... %s' % (i, img_path))
 
-            save_image( fake_B, "./output/%s/%s/%s" % (opt.name,name, os.path.basename(img_path[0]) ) )
-            save_image( real_A, "./output/%s/%s/%s_label" % (opt.name,name, os.path.basename(img_path[0]) ) )
+            save_image( fake_B, "./output/%s/%s/%s" % (self.opt.name,name, os.path.basename(img_path[0]) ) )
+            save_image( real_A, "./output/%s/%s/%s_label" % (self.opt.name,name, os.path.basename(img_path[0]) ) )
 
         os.remove(go)
 
-        rmrf('./input/%s/val/*' % opt.name)
+        rmrf('./input/%s/val/*' % self.opt.name)
 
 
 class RunE(FileSystemEventHandler):
+
+    def __init__(self, model, opt):
+        self.model = model
+        self.opt = opt
+
     def on_created(self, event):  # when file is created
         # do something, eg. call your function to process the image
         print("Got E event for file %s" % event.src_path)
@@ -107,22 +99,22 @@ class RunE(FileSystemEventHandler):
         with open(go) as f:
             name = f.readlines()[0]
 
-        print("starting to process %s" % optE.name)
+        print("starting to process %s" % self.optE.name)
 
-        optE.dataroot = "./input/%s/" % optE.name
+        self.optE.dataroot = "./input/%s/" % self.optE.name
 
-        data_loader = CreateDataLoader(optE)
+        data_loader = CreateDataLoader(self.optE)
         dataset = data_loader.load_data()
 
         for i, data in enumerate(dataset):
-            model.set_input(data)
+            self.model.set_input(data)
 
-            z = model.encode_real_B()
+            z = self.model.encode_real_B()
 
-            img_path = model.get_image_paths()
+            img_path = self.model.get_image_paths()
             print('%04d: process image... %s' % (i, img_path))
 
-            outfile = "./output/%s/%s/%s" % (optE.name, name, "_".join([str (s) for s in z[0]]) )
+            outfile = "./output/%s/%s/%s" % (self.optE.name, name, "_".join([str (s) for s in z[0]]) )
             try:
                 os.makedirs(os.path.dirname(outfile), exist_ok=True)
             except:
@@ -132,25 +124,66 @@ class RunE(FileSystemEventHandler):
 
         os.remove(go)
 
-        rmrf('./input/%s/val/*' % optE.name)
+        rmrf('./input/%s/val/*' % self.optE.name)
 
-observer = Observer()
 
-input_folder = './input/%s/' % opt.name
-os.makedirs(input_folder + "val", exist_ok=True)
-observer.schedule(RunG(), path=input_folder+"val/")
+class Interactive():
+    def __init__(self, name, size=256, which_model_netE='resnet_256'):
 
-input_folder_e = './input/%s_e/' % opt.name
-os.makedirs(input_folder_e+"val", exist_ok=True)
-observer.schedule(RunE(), path=input_folder_e+"val/")
-observer.start()
+        # options
+        optG = TestOptions().parse()
+        optG.name = name
+        optG.loadSize = size
+        optG.fineSize = size
+        optG.nThreads = 1  # test code only supports nThreads=1
+        optG.batchSize = 1  # test code only supports batchSize=1
+        optG.serial_batches = True  # no shuffle
+        optG.which_model_netE = which_model_netE
 
-# sleep until keyboard interrupt, then stop + rejoin the observer
-try:
-    while True:
-        time.sleep(1)
-except KeyboardInterrupt:
-    observer.stop()
+        optG.G_path = "./checkpoints/%s/latest_net_G.pth" % optG.name
+        optG.E_path = "./checkpoints/%s/latest_net_E.pth" % optG.name
 
-observer.join()
+        optG.dataroot = "./input/%s/" % optG.name
+        optG.no_flip = True
 
+        optE = copy.deepcopy(optG)
+        optE.dataroot = "./input/%s_e/" % optG.name
+        optE.name = optG.name + "_e"
+
+        model = create_model(optG)
+        model.eval()
+
+        self.optG = optG
+        self.optE = optE
+        self.model = model
+
+        _thread.start_new_thread (self.go, (name, size) )
+
+    def go (self, name, size):
+
+        observer = Observer()
+
+        input_folder = './input/%s/' % self.optG.name
+        os.makedirs(input_folder + "val", exist_ok=True)
+        observer.schedule(RunG(self.model, self.optG), path=input_folder+"val/")
+
+        input_folder_e = './input/%s_e/' % self.optE.name
+        os.makedirs(input_folder_e+"val", exist_ok=True)
+        observer.schedule(RunE(self.model, self.optE), path=input_folder_e+"val/")
+        observer.start()
+
+        # sleep until keyboard interrupt, then stop + rejoin the observer
+        # try:
+        #     while True:
+        #         time.sleep(1)
+        # except KeyboardInterrupt:
+        #     observer.stop()
+
+        observer.join()
+
+
+Interactive ("bike_2")
+Interactive ("roofs2", 512, 'resnet_512')
+
+while True:
+    time.sleep(600)
