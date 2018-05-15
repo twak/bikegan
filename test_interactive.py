@@ -185,7 +185,8 @@ class Interactive():
         observer.join()
 
 Interactive ("bike_2")
-Interactive ("roofs2", 512, 'resnet_512')
+# Interactive ("roofs2", 512, 'resnet_512')
+Interactive ("roofs4", 512, 'resnet_512')
 Interactive ("super3")
 Interactive ("dows2")
 Interactive ("dows1")
