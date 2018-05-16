@@ -48,14 +48,14 @@ class BlurDataset(BaseDataset):
         B = B[:, h_offset:h_offset + self.opt.fineSize,
                    w_offset:w_offset + self.opt.fineSize]
 
-        tiletype = random.random()
-        tileoverlap = 26
-        moverlap = self.opt.fineSize - tileoverlap
-
-        if tiletype < 0.66: # blur bottom overlap
-            B = torch.cat( ( B[:,0:moverlap,:],A[:,moverlap:self.opt.fineSize,:] ), dim = 1 )
-            if tiletype < 0.33: # blur right overlap
-                B = torch.cat( ( B[:,:,0:moverlap],A[:,:,moverlap:self.opt.fineSize] ), dim = 2 )
+        # tiletype = random.random()
+        # tileoverlap = 26
+        # moverlap = self.opt.fineSize - tileoverlap
+        # 
+        # if tiletype < 0.66: # blur bottom overlap
+        #     B = torch.cat( ( B[:,0:moverlap,:],A[:,moverlap:self.opt.fineSize,:] ), dim = 1 )
+        #     if tiletype < 0.33: # blur right overlap
+        #         B = torch.cat( ( B[:,:,0:moverlap],A[:,:,moverlap:self.opt.fineSize] ), dim = 2 )
 
         if random.random() < 0.2:
             top = random.randint(1,64)

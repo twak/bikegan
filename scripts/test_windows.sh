@@ -1,8 +1,8 @@
-CLASS='dows2'  # facades, day2night, edges2shoes, edges2handbags, maps
+CLASS='dows3'
 
-RESULTS_DIR='./results/dows2'
-G_PATH='/home/twak/code/bikegan/checkpoints_pub/dows2/dows2/latest_net_G.pth'
-E_PATH='/home/twak/code/bikegan/checkpoints_pub/dows2/dows2/latest_net_E.pth'
+RESULTS_DIR='./results/'$CLASS
+G_PATH='/home/twak/code/bikegan/checkpoints_pub/'$CLASS'/'$CLASS'/latest_net_G.pth'
+E_PATH='/home/twak/code/bikegan/checkpoints_pub/'$CLASS'/'$CLASS'/latest_net_E.pth'
 #E_PATH='./pretrained_models/map2aerial_net_E.pth'
 
 MODEL='bicycle_gan'
@@ -25,7 +25,7 @@ INPUT_NC=3
 # command
 CUDA_VISIBLE_DEVICES=${GPU_ID} python ./test.py \
   --display_id ${DISPLAY_ID} \
-  --dataroot /media/twak/8bc5e750-9a70-4180-8eee-ced2fbba6484/data/windows1 \
+  --dataroot /media/twak/8bc5e750-9a70-4180-8eee-ced2fbba6484/data/windows2 \
   --results_dir ${RESULTS_DIR} \
   --name ${NAME} \
   --how_many 300 \
