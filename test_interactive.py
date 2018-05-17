@@ -192,6 +192,7 @@ Interactive ("roofs4", 512, 'resnet_512')
 Interactive ("super4")
 Interactive ("dows2")
 Interactive ("dows1")
+Interactive ("blank")
 
 while True:
     time.sleep(600)
