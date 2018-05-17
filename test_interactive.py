@@ -59,17 +59,19 @@ class RunG(FileSystemEventHandler):
         
         print("starting to process %s" % name)
 
-        zs = name.split("_")[2:]
-        z = np.array ( [float(i) for i in zs], dtype = np.float32 )
-
         data_loader = CreateDataLoader(self.opt)
         dataset = data_loader.load_data()
 
         for i, data in enumerate(dataset):
             try:
+
+                zs = os.path.basename ( data['A_paths'][0] )[:-4].split("_") [1:]
+                z = np.array ( [float(i) for i in zs], dtype = np.float32 )
+
                 self.model.set_input(data)
 
                 _, real_A, fake_B, real_B, _ = self.model.test_simple( z, encode_real_B=False)
+
 
                 img_path = self.model.get_image_paths()
                 print('%04d: process image... %s' % (i, img_path))
