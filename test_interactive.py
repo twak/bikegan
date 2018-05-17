@@ -17,7 +17,32 @@ from PIL import Image
 
 import copy
 import _thread
+from util.fit_boxes import fit_boxes, LabelClass
 
+# class_names
+
+# the order if the classes is their z order (first one is at the back)
+cmp_classes = [
+    LabelClass('other', [0, 0, 0], 0),  # black borders or sky (id 0)
+    LabelClass('background', [0, 0, 170], 1),  # background (id 1)
+    LabelClass('facade', [0, 0, 255], 2),  # facade (id 2)
+    LabelClass('molding', [255, 85, 0], 3),  # molding (id 3)
+    LabelClass('cornice', [0, 255, 255], 4),  # cornice (id 4)
+    LabelClass('pillar', [255, 0, 0], 5),  # pillar (id 5)
+    LabelClass('window', [0, 85, 255], 6),  # window (id 6)
+    LabelClass('door', [0, 170, 255], 7),  # door (id 7)
+    LabelClass('sill', [85, 255, 170], 8),  # sill (id 8)
+    LabelClass('blind', [255, 255, 0], 9),  # blind (id 9)
+    LabelClass('balcony', [170, 255, 85], 10),  # balcony (id 10)
+    LabelClass('shop', [170, 0, 0], 11),  # shop (id 11)
+    LabelClass('deco', [255, 170, 0], 12),  # deco (id 12)
+]
+
+blank_classes = [
+    LabelClass('other' , [0,   0,   0], 0),
+    LabelClass('wall'  , [0,   0, 255], 0),
+    LabelClass('window', [0, 255,   0], 0),
+]
 
 def save_image(image_numpy, image_path):
 
@@ -41,9 +66,10 @@ def rmrf (file):
             os.remove(f)
 
 class RunG(FileSystemEventHandler):
-    def __init__(self, model, opt):
+    def __init__(self, model, opt, fit_boxes=None):
         self.model = model
         self.opt = opt
+        self.fit_boxes = fit_boxes
 
     def on_created(self, event): # when file is created
         # do something, eg. call your function to process the image
@@ -72,12 +98,15 @@ class RunG(FileSystemEventHandler):
 
                 _, real_A, fake_B, real_B, _ = self.model.test_simple( z, encode_real_B=False)
 
-
                 img_path = self.model.get_image_paths()
                 print('%04d: process image... %s' % (i, img_path))
 
                 save_image( fake_B, "./output/%s/%s/%s" % (self.opt.name,name, os.path.basename(img_path[0]) ) )
-                save_image( real_A, "./output/%s/%s/%s_label" % (self.opt.name,name, os.path.basename(img_path[0]) ) )
+                save_image(real_A, "./output/%s/%s/%s_label" % (self.opt.name, name, os.path.basename(img_path[0])))
+
+                if self.fit_boxes is not None:
+                    fit_boxes(fake_B, self.fit_boxes, "./output/%s/%s/%s_boxes" % (self.opt.name, name, os.path.basename(img_path[0])))
+
             except Exception as e:
                 print(e)
 
@@ -133,7 +162,7 @@ class RunE(FileSystemEventHandler):
 
 
 class Interactive():
-    def __init__(self, name, size=256, which_model_netE='resnet_256'):
+    def __init__(self, name, size=256, which_model_netE='resnet_256', which_direction="BtoA", fit_boxes = None):
 
         # options
         optG = TestOptions().parse()
@@ -144,6 +173,7 @@ class Interactive():
         optG.batchSize = 1  # test code only supports batchSize=1
         optG.serial_batches = True  # no shuffle
         optG.which_model_netE = which_model_netE
+        optG.which_direction = which_direction
 
         optG.G_path = "./checkpoints/%s/latest_net_G.pth" % optG.name
         optG.E_path = "./checkpoints/%s/latest_net_E.pth" % optG.name
@@ -162,15 +192,15 @@ class Interactive():
         self.optE = optE
         self.model = model
 
-        _thread.start_new_thread (self.go, (name, size) )
+        _thread.start_new_thread (self.go, (name, size, fit_boxes ) )
 
-    def go (self, name, size):
+    def go (self, name, size, fit_boxes):
 
         observer = Observer()
 
         input_folder = './input/%s/' % self.optG.name
         os.makedirs(input_folder + "val", exist_ok=True)
-        observer.schedule(RunG(self.model, self.optG), path=input_folder+"val/")
+        observer.schedule(RunG(self.model, self.optG, fit_boxes), path=input_folder+"val/")
 
         input_folder_e = './input/%s/' % self.optE.name
         os.makedirs(input_folder_e+"val", exist_ok=True)
@@ -192,7 +222,7 @@ Interactive ("roofs4", 512, 'resnet_512')
 Interactive ("super4")
 Interactive ("dows2")
 Interactive ("dows1")
-Interactive ("blank")
+Interactive ("blank", fit_boxes=blank_classes )
 
 while True:
     time.sleep(600)
