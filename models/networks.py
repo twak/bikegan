@@ -92,6 +92,8 @@ def get_norm_layer(layer_type='instance'):
         norm_layer = functools.partial(nn.BatchNorm2d, affine=True)
     elif layer_type == 'instance':
         norm_layer = functools.partial(nn.InstanceNorm2d, affine=False)
+    elif layer_type == 'instance_track':
+        norm_layer = functools.partial(nn.InstanceNorm2d, affine=False, track_running_stats=True)
     elif layer_type == 'none':
         norm_layer = None
     else:

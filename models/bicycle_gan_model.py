@@ -26,7 +26,8 @@ class BiCycleGANModel(BaseModel):
 
         use_D = opt.isTrain and opt.lambda_GAN > 0.0
         use_D2 = opt.isTrain and opt.lambda_GAN2 > 0.0 and not opt.use_same_D
-        use_E = opt.isTrain or not opt.no_encode
+        # use_E = opt.isTrain or not opt.no_encode
+        use_E = opt.nz > 0
         BaseModel.initialize(self, opt)
         self.init_data(opt, use_D=use_D, use_D2=use_D2, use_E=use_E, use_vae=True)
         self.skip = False

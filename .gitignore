@@ -44,3 +44,6 @@ test/.coverage
 */**/*.dylib*
 test/data/legacy_serialized.pt
 *~
+/.vscode/
+/input/
+/output/

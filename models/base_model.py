@@ -1,4 +1,6 @@
 import os
+import numpy as np
+import cv2
 import torch
 import util.util as util
 from torch.autograd import Variable
@@ -15,6 +17,25 @@ class BaseModel():
         self.isTrain = opt.isTrain
         self.Tensor = torch.cuda.FloatTensor if self.gpu_ids else torch.Tensor
         self.save_dir = os.path.join(opt.checkpoints_dir, opt.name)
+
+        # create image position channel
+        if self.opt.imgpos_condition:
+            real_batchSize = self.opt.batchSize // 2 if self.opt.isTrain else self.opt.batchSize
+            self.imgpos = torch.stack([
+                torch.linspace(0, 1, self.opt.fineSize).view(-1, 1).repeat(1, self.opt.fineSize),
+                torch.linspace(0, 1, self.opt.fineSize).view(1, -1).repeat(self.opt.fineSize, 1)]).expand(real_batchSize, -1, -1, -1)
+            if len(self.opt.gpu_ids) > 0 and self.opt.gpu_ids[0] >= 0:
+                self.imgpos = self.imgpos.cuda(self.opt.gpu_ids[0])
+
+        # create wall mask (to find walls in the label image)
+        if self.opt.walldist_condition:
+            wall_color = [c.color for c in opt.lbl_classes if c.name == 'facade']
+            if len(wall_color) != 1:
+                raise ValueError('There should be a single label \'facade\' in the list of labels.')
+            wall_color = wall_color[0]
+            self.mask_wall = torch.FloatTensor(wall_color).view(1, 3, 1, 1) * 2 - 1
+            if len(self.opt.gpu_ids) > 0 and self.opt.gpu_ids[0] >= 0:
+                self.mask_wall = self.mask_wall.cuda(self.opt.gpu_ids[0])
 
     def init_data(self, opt, use_D=True, use_D2=True, use_E=True, use_vae=True):
         print('---------- Networks initialized -------------')
@@ -173,6 +194,25 @@ class BaseModel():
         z = Variable(z)
         return z
 
+    def compute_walldist(self, x):
+        mask = ((x - self.mask_wall).abs_().sum(dim=1, keepdim=True) <= 0.001)
+        mask[:, :, [0, -1], :] = 0 # remove the image border, assume the wall stops at the image border
+        mask[:, :, :, [0, -1]] = 0 # remove the image border, assume the wall stops at the image border ()
+        mask = mask.cpu().numpy().transpose(0, 2, 3, 1)
+        walldist = np.zeros_like(mask, dtype='float32')
+        for i in range(mask.shape[0]):
+            img_mask = mask[i, :, :, :]
+            if img_mask.all():
+                raise ValueError('No wall boundary detected, cannot compute distance transform.')
+            walldist[i, :, :, 0] = cv2.distanceTransform(img_mask, cv2.DIST_L2, cv2.DIST_MASK_3)
+
+        walldist = torch.from_numpy(walldist.transpose(0, 3, 1, 2))
+
+        if len(self.gpu_ids) > 0:
+            walldist = walldist.cuda(self.gpu_ids[0])
+
+        return walldist
+
     # testing models
     def set_input(self, input):
         # get direciton
@@ -185,22 +225,53 @@ class BaseModel():
             input_B = input_B.cuda(self.gpu_ids[0], async=True)
         self.input_A = input_A
         self.input_B = input_B
+
         # get image paths
         self.image_paths = input['A_paths' if AtoB else 'B_paths']
+
+        if 'C' in input:
+            input_C = input['C']
+            if len(self.gpu_ids) > 0:
+                input_C = input_C.cuda(self.gpu_ids[0], async=True)
+            self.input_C = input_C
+        else:
+            self.input_C = None
+
+        if self.opt.walldist_condition:
+            self.input_walldist = self.compute_walldist(self.input_A)
+
+        if self.opt.noise_condition:
+            self.input_noise = torch.randn(self.input_A.size(0), 1, self.input_A.size(2), self.input_A.size(3))
+            if len(self.gpu_ids) > 0:
+                self.input_noise = self.input_noise.cuda(self.gpu_ids[0])
 
     def get_image_paths(self):
         return self.image_paths
 
     def test(self, z_sample):  # need to have input set already
-        self.real_A = Variable(self.input_A, volatile=True)
-        batchSize = self.input_A.size(0)
-        z = self.Tensor(batchSize, self.opt.nz)
-        z_torch = torch.from_numpy(z_sample)
-        z.copy_(z_torch)
-        # st()
-        self.z = Variable(z, volatile=True)
-        self.fake_B = self.netG.forward(self.real_A, self.z)
-        self.real_B = Variable(self.input_B, volatile=True)
+        with torch.no_grad():
+            self.real_A = self.input_A
+            batchSize = self.input_A.size(0)
+
+            self.G_input = self.real_A
+            if self.opt.imgpos_condition:
+                self.G_input = torch.cat([self.imgpos, self.G_input], dim=1)
+            if self.opt.walldist_condition:
+                self.G_input = torch.cat([self.input_walldist, self.G_input], dim=1)
+            if self.input_C is not None:
+                self.G_input = torch.cat([self.input_C, self.G_input], dim=1)
+            if self.opt.noise_condition:
+                self.G_input = torch.cat([self.input_noise, self.G_input], dim=1)
+
+            if self.opt.nz > 0:
+                self.z = self.Tensor(batchSize, self.opt.nz)
+                z_torch = torch.from_numpy(z_sample)
+                self.z.copy_(z_torch)
+            else:
+                self.z = None
+
+            self.fake_B = self.netG.forward(self.G_input, self.z)
+            self.real_B = self.input_B
 
     def encode(self, input_data):
         return self.netE.forward(Variable(input_data, volatile=True))
@@ -214,11 +285,11 @@ class BaseModel():
             self.set_input(input)
         return util.tensor2im(self.input_A), util.tensor2im(self.input_B)
 
-    def test_simple(self, z_sample, input=None, encode_real_B=False):
+    def test_simple(self, z_sample=None, input=None, encode_real_B=False):
         if input is not None:
             self.set_input(input)
 
-        if encode_real_B:  # use encoded z
+        if self.opt.nz > 0 and encode_real_B:  # use encoded z
             z_sample = self.encode_real_B()
 
         self.test(z_sample)

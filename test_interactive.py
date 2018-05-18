@@ -76,7 +76,7 @@ class RunG(FileSystemEventHandler):
         print ("Got G event for file %s" % event.src_path)
 
         go = os.path.abspath( os.path.join (event.src_path, os.pardir, "go") )
-        
+
         if not os.path.isfile( go ):
             return
 
@@ -89,7 +89,7 @@ class RunG(FileSystemEventHandler):
         dataset = data_loader.load_data()
 
         for i, data in enumerate(dataset):
-            try:
+            # try:
 
                 zs = os.path.basename ( data['A_paths'][0] )[:-4].split("_") [1:]
                 z = np.array ( [float(i) for i in zs], dtype = np.float32 )
@@ -107,8 +107,8 @@ class RunG(FileSystemEventHandler):
                 if self.fit_boxes is not None:
                     fit_boxes(fake_B, self.fit_boxes, "./output/%s/%s/%s_boxes" % (self.opt.name, name, os.path.basename(img_path[0])))
 
-            except Exception as e:
-                print(e)
+            # except Exception as e:
+            #     print(e)
 
         os.remove(go)
 
@@ -162,7 +162,10 @@ class RunE(FileSystemEventHandler):
 
 
 class Interactive():
-    def __init__(self, name, size=256, which_model_netE='resnet_256', which_direction="BtoA", fit_boxes = None):
+    def __init__(self, name, size=256, which_model_netE='resnet_256', which_direction="BtoA",
+                 fit_boxes=None, lbl_classes=None,
+                 walldist_condition=False, imgpos_condition=False, noise_condition=False,
+                 norm='instance', nz=8):
 
         # options
         optG = TestOptions().parse()
@@ -180,6 +183,24 @@ class Interactive():
 
         optG.dataroot = "./input/%s/" % optG.name
         optG.no_flip = True
+        optG.lbl_classes = lbl_classes
+        optG.walldist_condition = walldist_condition
+        optG.imgpos_condition = imgpos_condition
+        optG.noise_condition = noise_condition
+        optG.norm = norm
+        optG.nz = nz
+
+        if optG.imgpos_condition:
+            optG.input_nc += 2 # 2 image position x,y channels
+
+        if optG.walldist_condition:
+            optG.input_nc += 1 # 1 wall distance channel
+
+        if optG.noise_condition:
+            optG.input_nc += 1 # 1 wall noise channel
+
+        if optG.dataset_mode == 'triple':
+            optG.input_nc += 3 # 3 additional RGB channels
 
         optE = copy.deepcopy(optG)
         optE.dataroot = "./input/%s_e/" % optG.name
@@ -192,7 +213,7 @@ class Interactive():
         self.optE = optE
         self.model = model
 
-        _thread.start_new_thread (self.go, (name, size, fit_boxes ) )
+        _thread.start_new_thread(self.go, (name, size, fit_boxes))
 
     def go (self, name, size, fit_boxes):
 
@@ -217,12 +238,17 @@ class Interactive():
         observer.join()
 
 Interactive ("bike_2")
+Interactive('bike')
 # Interactive ("roofs2", 512, 'resnet_512')
 Interactive ("roofs4", 512, 'resnet_512')
 Interactive ("super4")
 Interactive ("dows2")
 Interactive ("dows1")
 Interactive ("blank", fit_boxes=blank_classes )
+Interactive ("empty2windows_f005", lbl_classes=cmp_classes, imgpos_condition=True, walldist_condition=True, norm='instance_track', fit_boxes=blank_classes)
+# Interactive ("empty2windows_f005", lbl_classes=cmp_classes, imgpos_condition=True, walldist_condition=True, norm='instance_track', fit_boxes=blank_classes)
+# Interactive ("facade_windows_f000", norm='instance_track', fit_boxes=blank_classes)
+# Interactive ("image2clabels_f001", norm='instance_track', fit_boxes=blank_classes, nz=0)
 
 while True:
     time.sleep(600)
