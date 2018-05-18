@@ -8,6 +8,8 @@ from PIL import Image
 import numpy as np
 import skimage.transform as transform
 
+from PIL import ImageEnhance
+
 class BlurDataset(BaseDataset):
     def initialize(self, opt):
         self.opt = opt
@@ -21,12 +23,34 @@ class BlurDataset(BaseDataset):
         AB_path = self.AB_paths[index]
         A = Image.open(AB_path).convert('RGB')
 
-        A = A.resize( (self.opt.loadSize, self.opt.loadSize), Image.BICUBIC)
 
-        small = random.randint(16, 64)
+        A = A.resize( (self.opt.loadSize, self.opt.loadSize), Image.BICUBIC)
+        ac = ImageEnhance.Brightness(A)
+        ac.enhance(1 + random.random() * 0.3 - 0.6);
+
+        if random.random() < 0.66:
+
+            C = Image.open(random.choice ( self.AB_paths) )
+            C = C.resize( (self.opt.loadSize, self.opt.loadSize), Image.BICUBIC)
+
+            cc = ImageEnhance.Brightness(A)
+            cc.enhance(1 + random.random() * 0.3 - 0.6);
+
+            if random.random() < 0.5:
+                C = C.crop( ( 0,0, int ( C.size[0] * random.random()) , C.size[1] ) )
+
+            if random.random() < 0.5:
+                C = C.crop((0, 0, C.size[0], int(C.size[1] * random.random()) ))
+
+            if random.random() < 0.5:
+                A.paste(C, (0, 0))
+            else:
+                A.paste(C, (A.size[0]-C.size[0], A.size[1]-C.size[1]))
+
+        small = 2 ** random.randint(4, 6)
 
         B = A.resize((small, small), Image.BICUBIC)
-        B += np.random.normal(0, random.randint(3, 10), (small, small, 3))
+        B += np.random.normal(0, random.randint(3, 5), (small, small, 3))
         B = transform.resize(B, A.size)
 
         w = A.size[1]
@@ -51,21 +75,21 @@ class BlurDataset(BaseDataset):
         # tiletype = random.random()
         # tileoverlap = 26
         # moverlap = self.opt.fineSize - tileoverlap
-        #
+
         # if tiletype < 0.66: # blur bottom overlap
         #     B = torch.cat( ( B[:,0:moverlap,:],A[:,moverlap:self.opt.fineSize,:] ), dim = 1 )
         #     if tiletype < 0.33: # blur right overlap
         #         B = torch.cat( ( B[:,:,0:moverlap],A[:,:,moverlap:self.opt.fineSize] ), dim = 2 )
 
-        if random.random() < 0.2:
-            top = random.randint(1,64)
-            B[:,0:top,:] = 0
-            A[:,0:top,:] = 0
-
-        if random.random() < 0.2:
-            left = random.randint(1,64)
-            B[:,:,0:left] = 0
-            A[:,:,0:left] = 0
+        # if random.random() < 0.2:
+        #     top = random.randint(1,64)
+        #     B[:,0:top,:] = 0
+        #     A[:,0:top,:] = 0
+        #
+        # if random.random() < 0.2:
+        #     left = random.randint(1,64)
+        #     B[:,:,0:left] = 0
+        #     A[:,:,0:left] = 0
 
         A = transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))(A)
         B = transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))(B)

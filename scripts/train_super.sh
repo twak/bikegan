@@ -1,4 +1,4 @@
-CLASS='super5'
+CLASS='super6'
 MODEL='bicycle_gan'
 GPU_ID=0
 DISPLAY_ID=$((GPU_ID*10+1))
@@ -41,5 +41,6 @@ CUDA_VISIBLE_DEVICES=${GPU_ID} python ./train.py \
   --niter ${NITER} \
   --niter_decay ${NITER_DECAY} \
   --use_dropout \
+  --conditional_D \
   --dataset_mode blur
 

@@ -1,4 +1,4 @@
-CLASS='roofs5'  # facades, day2night, edges2shoes, edges2handbags, maps
+CLASS='roofs6'  # facades, day2night, edges2shoes, edges2handbags, maps
 MODEL='bicycle_gan'
 GPU_ID=0
 DISPLAY_ID=$((GPU_ID*10+1))
