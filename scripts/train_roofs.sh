@@ -22,10 +22,7 @@ DIRECTION='BtoA'
 # command
 CUDA_VISIBLE_DEVICES=${GPU_ID} python ./train.py \
   --which_model_netE 'resnet_512' \
-  --which_model_netG 'big_unet_1' \
-  --which_model_netD 'big_512_multi' \
   --display_id ${DISPLAY_ID} \
-  --which_model_netE 'resnet_512' \
   --dataroot /data \
   --name ${NAME} \
   --model ${MODEL} \
