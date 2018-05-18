@@ -1,4 +1,4 @@
-CLASS='roofs4'  # facades, day2night, edges2shoes, edges2handbags, maps
+CLASS='roofs5'  # facades, day2night, edges2shoes, edges2handbags, maps
 MODEL='bicycle_gan'
 GPU_ID=0
 DISPLAY_ID=$((GPU_ID*10+1))
@@ -11,7 +11,7 @@ NAME=${CLASS} #_${MODEL}_${DATE}
 
 # dataset
 NO_FLIP=''
-LOAD_SIZE=512
+LOAD_SIZE=550
 FINE_SIZE=512
 INPUT_NC=3
 NITER=200
@@ -21,6 +21,9 @@ DIRECTION='BtoA'
 
 # command
 CUDA_VISIBLE_DEVICES=${GPU_ID} python ./train.py \
+  --which_model_netE 'resnet_512' \
+  --which_model_netG 'big_unet_1' \
+  --which_model_netD 'big_512_multi' \
   --display_id ${DISPLAY_ID} \
   --which_model_netE 'resnet_512' \
   --dataroot /data \

@@ -140,9 +140,9 @@ def define_G(input_nc, output_nc, nz, ngf,
     elif which_model_netG == 'unet_256' and where_add == 'all':
         netG = G_Unet_add_all(input_nc, output_nc, nz, 8, ngf, norm_layer=norm_layer, nl_layer=nl_layer,
                               use_dropout=use_dropout, gpu_ids=gpu_ids, upsample=upsample)
-    # elif which_model_netG == 'big_unet_1' and where_add == 'all':
-    #     netG = G_Unet_add_all(input_nc, output_nc, nz, 9, ngf, norm_layer=norm_layer, nl_layer=nl_layer,
-    #                           use_dropout=use_dropout, gpu_ids=gpu_ids, upsample=upsample)
+    elif which_model_netG == 'big_unet_1' and where_add == 'all':
+        netG = G_Unet_add_all(input_nc, output_nc, nz, 9, ngf, norm_layer=norm_layer, nl_layer=nl_layer,
+                              use_dropout=use_dropout, gpu_ids=gpu_ids, upsample=upsample)
     elif which_model_netG == 'outernet' and where_add == 'all':
         netG = Outernet(input_nc, [
             [0,1,0],
@@ -188,9 +188,9 @@ def define_D(input_nc, ndf, which_model_netD,
     elif which_model_netD == 'big_256_multi':
         netD = D_NLayersMulti(input_nc=input_nc, ndf=ndf, n_layers=5, norm_layer=norm_layer,
                               use_sigmoid=use_sigmoid, gpu_ids=gpu_ids, num_D=num_Ds)
-    # elif which_model_netD == 'big_512_multi':
-    #     netD = D_NLayersMulti(input_nc=input_nc, ndf=ndf, n_layers=6, norm_layer=norm_layer,
-    #                           use_sigmoid=use_sigmoid, gpu_ids=gpu_ids, num_D=num_Ds)
+    elif which_model_netD == 'big_512_multi':
+        netD = D_NLayersMulti(input_nc=input_nc, ndf=ndf, n_layers=6, norm_layer=norm_layer,
+                              use_sigmoid=use_sigmoid, gpu_ids=gpu_ids, num_D=num_Ds)
     else:
         raise NotImplementedError(
             'Discriminator model name [%s] is not recognized' % which_model_netD)
