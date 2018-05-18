@@ -19,6 +19,8 @@ import copy
 import _thread
 from util.fit_boxes import fit_boxes, LabelClass
 
+import traceback
+
 # class_names
 
 # the order if the classes is their z order (first one is at the back)
@@ -75,44 +77,51 @@ class RunG(FileSystemEventHandler):
         # do something, eg. call your function to process the image
         print ("Got G event for file %s" % event.src_path)
 
-        go = os.path.abspath( os.path.join (event.src_path, os.pardir, "go") )
+        try:
 
-        if not os.path.isfile( go ):
-            return
+            go = os.path.abspath( os.path.join (event.src_path, os.pardir, "go") )
 
-        with open (go) as f:
-            name = f.readlines()[0]
-        
-        print("starting to process %s" % name)
+            if not os.path.isfile( go ):
+                return
 
-        data_loader = CreateDataLoader(self.opt)
-        dataset = data_loader.load_data()
+            with open (go) as f:
+                name = f.readlines()[0]
 
-        for i, data in enumerate(dataset):
-            # try:
+            print("starting to process %s" % name)
 
-                zs = os.path.basename ( data['A_paths'][0] )[:-4].split("_") [1:]
-                z = np.array ( [float(i) for i in zs], dtype = np.float32 )
+            data_loader = CreateDataLoader(self.opt)
+            dataset = data_loader.load_data()
 
-                self.model.set_input(data)
+            for i, data in enumerate(dataset):
+                # try:
 
-                _, real_A, fake_B, real_B, _ = self.model.test_simple( z, encode_real_B=False)
+                    zs = os.path.basename ( data['A_paths'][0] )[:-4].split("_") [1:]
+                    z = np.array ( [float(i) for i in zs], dtype = np.float32 )
 
-                img_path = self.model.get_image_paths()
-                print('%04d: process image... %s' % (i, img_path))
+                    self.model.set_input(data)
 
-                save_image( fake_B, "./output/%s/%s/%s" % (self.opt.name,name, os.path.basename(img_path[0]) ) )
-                save_image(real_A, "./output/%s/%s/%s_label" % (self.opt.name, name, os.path.basename(img_path[0])))
+                    _, real_A, fake_B, real_B, _ = self.model.test_simple( z, encode_real_B=False)
 
-                if self.fit_boxes is not None:
-                    fit_boxes(fake_B, self.fit_boxes, "./output/%s/%s/%s_boxes" % (self.opt.name, name, os.path.basename(img_path[0])))
+                    img_path = self.model.get_image_paths()
+                    print('%04d: process image... %s' % (i, img_path))
 
-            # except Exception as e:
-            #     print(e)
+                    save_image( fake_B, "./output/%s/%s/%s" % (self.opt.name,name, os.path.basename(img_path[0]) ) )
+                    save_image(real_A, "./output/%s/%s/%s_label" % (self.opt.name, name, os.path.basename(img_path[0])))
 
-        os.remove(go)
+                    if self.fit_boxes is not None:
+                        fit_boxes(fake_B, self.fit_boxes, "./output/%s/%s/%s_boxes" % (self.opt.name, name, os.path.basename(img_path[0])))
 
-        rmrf('./input/%s/val/*' % self.opt.name)
+                # except Exception as e:
+                #     print(e)
+
+            os.remove(go)
+
+            rmrf('./input/%s/val/*' % self.opt.name)
+
+
+        except Exception as e:
+            traceback.print_exc()
+            print(e)
 
 
 class RunE(FileSystemEventHandler):
@@ -165,7 +174,7 @@ class Interactive():
     def __init__(self, name, size=256, which_model_netE='resnet_256', which_direction="BtoA",
                  fit_boxes=None, lbl_classes=None,
                  walldist_condition=False, imgpos_condition=False, noise_condition=False,
-                 norm='instance', nz=8):
+                 norm='instance', nz=8, pytorch_v2 = False):
 
         # options
         optG = TestOptions().parse()
@@ -177,6 +186,7 @@ class Interactive():
         optG.serial_batches = True  # no shuffle
         optG.which_model_netE = which_model_netE
         optG.which_direction = which_direction
+        optG.pytorch_v2 = pytorch_v2
 
         optG.G_path = "./checkpoints/%s/latest_net_G.pth" % optG.name
         optG.E_path = "./checkpoints/%s/latest_net_E.pth" % optG.name
@@ -237,14 +247,12 @@ class Interactive():
 
         observer.join()
 
-Interactive ("bike_2")
-Interactive('bike')
-# Interactive ("roofs2", 512, 'resnet_512')
-Interactive ("roofs4", 512, 'resnet_512')
-Interactive ("super4")
-Interactive ("dows2")
-Interactive ("dows1")
-Interactive ("blank", fit_boxes=blank_classes )
+Interactive ("bike_2", pytorch_v2 = True)
+Interactive ("roofs4", 512, 'resnet_512', pytorch_v2 = True)
+Interactive ("super6", pytorch_v2 = True)
+Interactive ("dows2", pytorch_v2 = True)
+Interactive ("dows1", pytorch_v2 = True)
+# Interactive ("blank", fit_boxes=blank_classes )
 Interactive ("empty2windows_f005", lbl_classes=cmp_classes, imgpos_condition=True, walldist_condition=True, norm='instance_track', fit_boxes=blank_classes)
 # Interactive ("empty2windows_f005", lbl_classes=cmp_classes, imgpos_condition=True, walldist_condition=True, norm='instance_track', fit_boxes=blank_classes)
 # Interactive ("facade_windows_f000", norm='instance_track', fit_boxes=blank_classes)

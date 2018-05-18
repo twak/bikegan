@@ -6,15 +6,15 @@ import util.util as util
 from .base_model import BaseModel
 from torchvision import models
 
-try: # hacky patch to read london _xy weights from new verison of pytorch/cuda
-    torch._utils._rebuild_tensor_v2
-except AttributeError:
-    def _rebuild_tensor_v2(storage, storage_offset, size, stride, requires_grad, backward_hooks):
-        tensor = torch._utils._rebuild_tensor(storage, storage_offset, size, stride)
-        tensor.requires_grad = requires_grad
-        tensor._backward_hooks = backward_hooks
-        return tensor
-    torch._utils._rebuild_tensor_v2 = _rebuild_tensor_v2
+# try: # hacky patch to read london _xy weights from new verison of pytorch/cuda
+#     torch._utils._rebuild_tensor_v2
+# except AttributeError:
+#     def _rebuild_tensor_v2(storage, storage_offset, size, stride, requires_grad, backward_hooks):
+#         tensor = torch._utils._rebuild_tensor(storage, storage_offset, size, stride)
+#         tensor.requires_grad = requires_grad
+#         tensor._backward_hooks = backward_hooks
+#         return tensor
+#     torch._utils._rebuild_tensor_v2 = _rebuild_tensor_v2
 
 class BiCycleGANModel(BaseModel):
     def name(self):

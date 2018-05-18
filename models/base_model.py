@@ -78,21 +78,21 @@ class BaseModel():
             networks.print_network(self.netE)
 
         if not opt.isTrain:
-            self.load_network_test(self.netG, opt.G_path)
+            self.load_network_test(self.netG, opt.G_path, opt.pytorch_v2)
 
             if use_E:
-                self.load_network_test(self.netE, opt.E_path)
+                self.load_network_test(self.netE, opt.E_path, opt.pytorch_v2)
 
         if opt.isTrain and opt.continue_train:
-            self.load_network(self.netG, 'G', opt.which_epoch)
+            self.load_network(self.netG, 'G', opt.which_epoch, opt.pytorch_v2)
 
             if use_D:
-                self.load_network(self.netD, 'D', opt.which_epoch)
+                self.load_network(self.netD, 'D', opt.which_epoch, opt.pytorch_v2)
             if use_D2:
-                self.load_network(self.netD, 'D2', opt.which_epoch)
+                self.load_network(self.netD, 'D2', opt.which_epoch, opt.pytorch_v2)
 
             if use_E:
-                self.load_network(self.netE, 'E', opt.which_epoch)
+                self.load_network(self.netE, 'E', opt.which_epoch, opt.pytorch_v2)
         print('-----------------------------------------------')
 
         # define loss functions
@@ -167,13 +167,24 @@ class BaseModel():
             network.cuda(gpu_ids[0])
 
     # helper loading function that can be used by subclasses
-    def load_network(self, network, network_label, epoch_label):
+    def load_network(self, network, network_label, epoch_label, pytorch2=False):
         save_filename = '%s_net_%s.pth' % (epoch_label, network_label)
         save_path = os.path.join(self.save_dir, save_filename)
-        network.load_state_dict(torch.load(save_path))
+        dict = torch.load(save_path)
+        if pytorch2:
+            self.importPytorch2(dict)
+        network.load_state_dict()
 
-    def load_network_test(self, network, network_path):
-        network.load_state_dict(torch.load(network_path))
+    def load_network_test(self, network, network_path, pytorch2=False):
+        dict = torch.load(network_path)
+        if pytorch2:
+            self.importPytorch2(dict)
+        network.load_state_dict(dict)
+
+    def importPytorch2(self, foo):
+        for k in list(foo.keys()):
+            if "running" in k:
+                del foo[k]
 
     def update_learning_rate(self):
         loss = self.get_measurement()

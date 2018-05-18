@@ -56,6 +56,7 @@ class BaseOptions():
         self.parser.add_argument('--init_type', type=str, default='xavier', help='network initialization [normal|xavier|kaiming|orthogonal]')
         self.parser.add_argument('--center_crop', action='store_true', help='if apply for center cropping for the test')
 
+        self.parser.add_argument('--pytorch_v2', action='store_true', help='patch old saved dictionaries')
         self.parser.add_argument('--blur_a', type=int, default=0.0, help='width of blur applied to A')
 
         # special tasks
