@@ -1,4 +1,4 @@
-CLASS='super6'
+CLASS='super7'
 MODEL='bicycle_gan'
 GPU_ID=0
 DISPLAY_ID=$((GPU_ID*10+1))
