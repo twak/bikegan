@@ -28,10 +28,13 @@ class BlurDataset(BaseDataset):
         ac = ImageEnhance.Brightness(A)
         ac.enhance(1 + random.random() * 0.3 - 0.6);
 
-        if random.random() < 0.66:
+        if random.random() < 0.75:
 
-            C = Image.open(random.choice ( self.AB_paths) )
-            C = C.resize( (self.opt.loadSize, self.opt.loadSize), Image.BICUBIC)
+            if random.random() < 0.05:
+                C = Image.new("RGB", (self.opt.loadSize, self.opt.loadSize), ( int(random.random() * 30 ), int(random.random() * 30), int(random.random() * 30)))
+            else:
+                C = Image.open(random.choice ( self.AB_paths) )
+                C = C.resize( (self.opt.loadSize, self.opt.loadSize), Image.BICUBIC)
 
             cc = ImageEnhance.Brightness(A)
             cc.enhance(1 + random.random() * 0.3 - 0.6);
