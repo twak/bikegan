@@ -28,27 +28,27 @@ class BlurDataset(BaseDataset):
         ac = ImageEnhance.Brightness(A)
         ac.enhance(1 + random.random() * 0.3 - 0.6);
 
-        if random.random() < 0.8:
-
-            if random.random() < 0.1:
-                C = Image.new("RGB", (self.opt.loadSize, self.opt.loadSize), ( int(random.random() * 30 ), int(random.random() * 30), int(random.random() * 30)))
-            else:
-                C = Image.open(random.choice ( self.AB_paths) )
-                C = C.resize( (self.opt.loadSize, self.opt.loadSize), Image.BICUBIC)
-
-            cc = ImageEnhance.Brightness(A)
-            cc.enhance(1 + random.random() * 0.3 - 0.6);
-
-            if random.random() < 0.5:
-                C = C.crop( ( 0,0, int ( C.size[0] * random.random()) , C.size[1] ) )
-
-            if random.random() < 0.5:
-                C = C.crop((0, 0, C.size[0], int(C.size[1] * random.random()) ))
-
-            if random.random() < 0.5:
-                A.paste(C, (0, 0))
-            else:
-                A.paste(C, (A.size[0]-C.size[0], A.size[1]-C.size[1]))
+        # if random.random() < 0.8:
+        #
+        #     if random.random() < 0.2:
+        #         C = Image.new("RGB", (self.opt.loadSize, self.opt.loadSize), ( int(random.random() * 30 ), int(random.random() * 30), int(random.random() * 30)))
+        #     else:
+        #         C = Image.open(random.choice ( self.AB_paths) )
+        #         C = C.resize( (self.opt.loadSize, self.opt.loadSize), Image.BICUBIC)
+        #
+        #     cc = ImageEnhance.Brightness(A)
+        #     cc.enhance(1 + random.random() * 0.3 - 0.6);
+        #
+        #     if random.random() < 0.5:
+        #         C = C.crop( ( 0,0, int ( C.size[0] * random.random()) , C.size[1] ) )
+        #
+        #     if random.random() < 0.5:
+        #         C = C.crop((0, 0, C.size[0], int(C.size[1] * random.random()) ))
+        #
+        #     if random.random() < 0.5:
+        #         A.paste(C, (0, 0))
+        #     else:
+        #         A.paste(C, (A.size[0]-C.size[0], A.size[1]-C.size[1]))
 
         small = 2 ** random.randint(4, 6)
 
@@ -75,24 +75,24 @@ class BlurDataset(BaseDataset):
         B = B[:, h_offset:h_offset + self.opt.fineSize,
                    w_offset:w_offset + self.opt.fineSize]
 
-        # tiletype = random.random()
-        # tileoverlap = 26
-        # moverlap = self.opt.fineSize - tileoverlap
+        tiletype = random.random()
+        tileoverlap = 26
+        moverlap = self.opt.fineSize - tileoverlap
 
-        # if tiletype < 0.66: # blur bottom overlap
-        #     B = torch.cat( ( B[:,0:moverlap,:],A[:,moverlap:self.opt.fineSize,:] ), dim = 1 )
-        #     if tiletype < 0.33: # blur right overlap
-        #         B = torch.cat( ( B[:,:,0:moverlap],A[:,:,moverlap:self.opt.fineSize] ), dim = 2 )
+        if tiletype < 0.66: # blur bottom overlap
+            B = torch.cat( ( B[:,0:moverlap,:],A[:,moverlap:self.opt.fineSize,:] ), dim = 1 )
+            if tiletype < 0.33: # blur right overlap
+                B = torch.cat( ( B[:,:,0:moverlap],A[:,:,moverlap:self.opt.fineSize] ), dim = 2 )
 
-        # if random.random() < 0.2:
-        #     top = random.randint(1,64)
-        #     B[:,0:top,:] = 0
-        #     A[:,0:top,:] = 0
-        #
-        # if random.random() < 0.2:
-        #     left = random.randint(1,64)
-        #     B[:,:,0:left] = 0
-        #     A[:,:,0:left] = 0
+        if random.random() < 0.2:
+            top = random.randint(1,64)
+            B[:,0:top,:] = 0
+            A[:,0:top,:] = 0
+
+        if random.random() < 0.2:
+            left = random.randint(1,64)
+            B[:,:,0:left] = 0
+            A[:,:,0:left] = 0
 
         A = transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))(A)
         B = transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))(B)
