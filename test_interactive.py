@@ -248,7 +248,7 @@ class Interactive():
         observer.join()
 
 Interactive ("bike_2", pytorch_v2 = True)
-Interactive ("roofs4", 512, 'resnet_512', pytorch_v2 = True)
+Interactive ("roofs6", 512, 'resnet_512', pytorch_v2 = True)
 Interactive ("super6", pytorch_v2 = True)
 Interactive ("dows2", pytorch_v2 = True)
 Interactive ("dows1", pytorch_v2 = True)
