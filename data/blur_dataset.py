@@ -25,7 +25,7 @@ class BlurDataset(BaseDataset):
 
         A = A.resize( (self.opt.loadSize, self.opt.loadSize), Image.BICUBIC)
         ac = ImageEnhance.Brightness(A)
-        ac.enhance(1 + random.random() * 0.6 - 0.3)
+        A = ac.enhance( 1 + random.random() * 0.6 - 0.3)
 
         # if random.random() < 0.8:
         #
@@ -100,8 +100,8 @@ class BlurDataset(BaseDataset):
         #     B[:,:,0:left] = 0
         #     A[:,:,0:left] = 0
         #
-        # A = transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))(A)
-        # B = transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))(B)
+        A = transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))(A)
+        B = transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))(B)
         #
         # if self.opt.which_direction == 'BtoA':
         #     input_nc = self.opt.output_nc
