@@ -247,7 +247,7 @@ class Interactive():
 
         observer.join()
 
-Interactive ("bike_2", pytorch_v2 = True)
+# Interactive ("bike_2", pytorch_v2 = True)
 Interactive ("roofs6", 512, 'resnet_512', pytorch_v2 = True)
 Interactive ("super6", pytorch_v2 = True)
 Interactive ("dows2", pytorch_v2 = True)
@@ -255,7 +255,7 @@ Interactive ("dows1", pytorch_v2 = True)
 # Interactive ("blank", fit_boxes=blank_classes )
 Interactive ("empty2windows_f005", lbl_classes=cmp_classes, imgpos_condition=True, walldist_condition=True, norm='instance_track', fit_boxes=blank_classes)
 # Interactive ("empty2windows_f005", lbl_classes=cmp_classes, imgpos_condition=True, walldist_condition=True, norm='instance_track', fit_boxes=blank_classes)
-# Interactive ("facade_windows_f000", norm='instance_track', fit_boxes=blank_classes)
+Interactive ("facade_windows_f000", norm='instance_track', fit_boxes=blank_classes)
 # Interactive ("image2clabels_f001", norm='instance_track', fit_boxes=blank_classes, nz=0)
 
 while True:
