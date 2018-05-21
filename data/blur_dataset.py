@@ -25,7 +25,7 @@ class BlurDataset(BaseDataset):
 
         A = A.resize( (self.opt.loadSize, self.opt.loadSize), Image.BICUBIC)
         ac = ImageEnhance.Brightness(A)
-        ac.enhance(1 + random.random() * 0.3 - 0.6);
+        ac.enhance(1 + random.random() * 0.6 - 0.3)
 
         # if random.random() < 0.8:
         #

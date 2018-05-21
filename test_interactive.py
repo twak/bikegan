@@ -199,6 +199,7 @@ class Interactive():
         optG.noise_condition = noise_condition
         optG.norm = norm
         optG.nz = nz
+        optG.use_dropout = False
 
         if optG.imgpos_condition:
             optG.input_nc += 2 # 2 image position x,y channels
