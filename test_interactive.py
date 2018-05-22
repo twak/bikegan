@@ -250,7 +250,8 @@ class Interactive():
 
 # Interactive ("bike_2", pytorch_v2 = True)
 Interactive ("roofs6", 512, 'resnet_512', pytorch_v2 = True)
-Interactive ("super6", pytorch_v2 = True)
+Interactive ("super6", pytorch_v2 = True) # walls
+Interactive ("super9", pytorch_v2 = True) # facades
 Interactive ("dows2", pytorch_v2 = True)
 Interactive ("dows1", pytorch_v2 = True)
 # Interactive ("blank", fit_boxes=blank_classes )
