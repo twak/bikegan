@@ -89,12 +89,17 @@ class RunG(FileSystemEventHandler):
 
             print("starting to process %s" % name)
 
+            if self.opt.window_condition:
+                self.opt.window_dataroot = os.path.join(self.opt.dataroot, 'windows')
+
+            if self.opt.metrics_condition or self.opt.empty_facade_condition:
+                self.opt.empty_dataroot = os.path.join(self.opt.dataroot, 'empty')
+
             data_loader = CreateDataLoader(self.opt)
             dataset = data_loader.load_data()
 
             for i, data in enumerate(dataset):
                 # try:
-
                     zs = os.path.basename ( data['A_paths'][0] )[:-4].split("_") [1:]
                     z = np.array ( [float(i) for i in zs], dtype = np.float32 )
 
@@ -174,14 +179,15 @@ class Interactive():
     def __init__(self, name, size=256, which_model_netE='resnet_256', which_direction="BtoA",
                  fit_boxes=None, lbl_classes=None,
                  walldist_condition=False, imgpos_condition=False, noise_condition=False,
-                 norm='instance', nz=8, pytorch_v2 = False):
+                 window_condition=False, metrics_condition=False, empty_facade_condition=False,
+                 norm='instance', nz=8, pytorch_v2 = False, dataset_mode='aligned'):
 
         # options
         optG = TestOptions().parse()
         optG.name = name
         optG.loadSize = size
         optG.fineSize = size
-        optG.nThreads = 1  # test code only supports nThreads=1
+        optG.nThreads = min(1, optG.nThreads)  # test code only supports nThreads=1
         optG.batchSize = 1  # test code only supports batchSize=1
         optG.serial_batches = True  # no shuffle
         optG.which_model_netE = which_model_netE
@@ -197,8 +203,12 @@ class Interactive():
         optG.walldist_condition = walldist_condition
         optG.imgpos_condition = imgpos_condition
         optG.noise_condition = noise_condition
+        optG.window_condition = window_condition
+        optG.metrics_condition = metrics_condition
+        optG.empty_facade_condition = empty_facade_condition
         optG.norm = norm
         optG.nz = nz
+        optG.dataset_mode = dataset_mode
         optG.use_dropout = False
 
         if optG.imgpos_condition:
@@ -210,8 +220,14 @@ class Interactive():
         if optG.noise_condition:
             optG.input_nc += 1 # 1 wall noise channel
 
-        if optG.dataset_mode == 'triple':
-            optG.input_nc += 3 # 3 additional RGB channels
+        if optG.window_condition:
+            optG.input_nc += 3 # 3 additional channels: RGB
+
+        if optG.metrics_condition:
+            optG.input_nc += 6 # 6 additional channels
+
+        if optG.empty_facade_condition:
+            optG.input_nc += 3 # 3 additional channels: RGB
 
         optE = copy.deepcopy(optG)
         optE.dataroot = "./input/%s_e/" % optG.name
@@ -255,10 +271,31 @@ Interactive ("super9", pytorch_v2 = True) # facades
 Interactive ("dows2", pytorch_v2 = True)
 Interactive ("dows1", pytorch_v2 = True)
 # Interactive ("blank", fit_boxes=blank_classes )
-Interactive ("empty2windows_f005", lbl_classes=cmp_classes, imgpos_condition=True, walldist_condition=True, norm='instance_track', fit_boxes=blank_classes)
-# Interactive ("empty2windows_f005", lbl_classes=cmp_classes, imgpos_condition=True, walldist_condition=True, norm='instance_track', fit_boxes=blank_classes)
-Interactive ("facade_windows_f000", norm='instance_track', fit_boxes=blank_classes)
-# Interactive ("image2clabels_f001", norm='instance_track', fit_boxes=blank_classes, nz=0)
+Interactive ("empty2windows_f005", lbl_classes=cmp_classes, imgpos_condition=True, walldist_condition=True, norm='instance_track', fit_boxes=blank_classes, dataset_mode='multi')
+# Interactive ("empty2windows_f005", lbl_classes=cmp_classes, imgpos_condition=True, walldist_condition=True, norm='instance_track', fit_boxes=blank_classes, dataset_mode='multi')
+Interactive ("facade_windows_f000", norm='instance_track', fit_boxes=blank_classes, dataset_mode='multi')
+# Interactive ("image2clabels_f001", norm='instance_track', fit_boxes=blank_classes, nz=0, dataset_mode='multi')
+
+
+# filename should be ...  @unit_size_  ...
+# the unit_size should be the floor height / frame width as a fraction of the image height
+
+# # not working well with random z's in a few cases, and may be ignoring facade size
+# Interactive (
+#     "empty2windows_f009",
+#     lbl_classes=cmp_classes, fit_boxes=blank_classes,
+#     imgpos_condition=True, metrics_condition=True, empty_facade_condition=True, dataset_mode='multi')
+
+# not working with random z's - need to investigate
+# Interactive (
+#     "facade_windows_f013_60",
+#     lbl_classes=cmp_classes, fit_boxes=blank_classes,
+#     imgpos_condition=True, metrics_condition=True, empty_facade_condition=True, dataset_mode='multi')
+
+# Interactive (
+#     "image2clabels_f005",
+#     lbl_classes=cmp_classes, fit_boxes=blank_classes,
+#     window_condition=True, metrics_condition=True, empty_facade_condition=True, dataset_mode='multi', nz=0)
 
 while True:
     time.sleep(600)

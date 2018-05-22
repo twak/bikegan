@@ -240,21 +240,24 @@ class BaseModel():
         # get image paths
         self.image_paths = input['A_paths' if AtoB else 'B_paths']
 
-        if 'C' in input:
-            input_C = input['C']
-            if len(self.gpu_ids) > 0:
-                input_C = input_C.cuda(self.gpu_ids[0], async=True)
-            self.input_C = input_C
-        else:
-            self.input_C = None
-
         if self.opt.walldist_condition:
             self.input_walldist = self.compute_walldist(self.input_A)
-
+        if self.opt.window_condition:
+            self.input_window = input['window']
+            if len(self.gpu_ids) > 0:
+                self.input_window = self.input_window.cuda(self.gpu_ids[0])
         if self.opt.noise_condition:
             self.input_noise = torch.randn(self.input_A.size(0), 1, self.input_A.size(2), self.input_A.size(3))
             if len(self.gpu_ids) > 0:
                 self.input_noise = self.input_noise.cuda(self.gpu_ids[0])
+        if self.opt.metrics_condition:
+            self.input_facade_metrics = input['metrics']
+            if len(self.gpu_ids) > 0:
+                self.input_facade_metrics = self.input_facade_metrics.cuda(self.gpu_ids[0])
+        if self.opt.empty_facade_condition:
+            self.input_empty_facade = input['empty']
+            if len(self.gpu_ids) > 0:
+                self.input_empty_facade = self.input_empty_facade.cuda(self.gpu_ids[0])
 
     def get_image_paths(self):
         return self.image_paths
@@ -269,10 +272,14 @@ class BaseModel():
                 self.G_input = torch.cat([self.imgpos, self.G_input], dim=1)
             if self.opt.walldist_condition:
                 self.G_input = torch.cat([self.input_walldist, self.G_input], dim=1)
-            if self.input_C is not None:
-                self.G_input = torch.cat([self.input_C, self.G_input], dim=1)
+            if self.opt.window_condition:
+                self.G_input = torch.cat([self.input_window, self.G_input], dim=1)
             if self.opt.noise_condition:
                 self.G_input = torch.cat([self.input_noise, self.G_input], dim=1)
+            if self.opt.metrics_condition:
+                self.G_input = torch.cat([self.input_facade_metrics, self.G_input], dim=1)
+            if self.opt.empty_facade_condition:
+                self.G_input = torch.cat([self.input_empty_facade, self.G_input], dim=1)
 
             if self.opt.nz > 0:
                 self.z = self.Tensor(batchSize, self.opt.nz)

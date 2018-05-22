@@ -54,6 +54,9 @@ class BaseOptions():
         self.parser.add_argument('--imgpos_condition', action='store_true', help='use image position x,y as condition in G and D networks')
         self.parser.add_argument('--walldist_condition', action='store_true', help='use distance from wall as condition in G and D networks')
         self.parser.add_argument('--noise_condition', action='store_true', help='use distance from wall as condition in G and D networks')
+        self.parser.add_argument('--metrics_condition', type=str, nargs='*', default=[], help='use facade metrics as condition in G and D networks (give data root here or empty for none)')
+        self.parser.add_argument('--empty_facade_condition', type=str, default='', help='use empty facade as condition in in G and D networks (give data root here or empty for none)')
+        self.parser.add_argument('--window_condition', type=str, default='', help='use windows as condition in G and D networks (give data root here or empty for none)')
         self.parser.add_argument('--init_type', type=str, default='xavier', help='network initialization [normal|xavier|kaiming|orthogonal]')
         self.parser.add_argument('--center_crop', action='store_true', help='if apply for center cropping for the test')
 

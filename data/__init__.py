@@ -20,9 +20,9 @@ def CreateDataset(opt):
     elif opt.dataset_mode == 'single':
         from data.single_dataset import SingleDataset
         dataset = SingleDataset()
-    elif opt.dataset_mode == 'triple':
-        from data.triple_dataset import TripleDataset
-        dataset = TripleDataset()
+    elif opt.dataset_mode == 'multi':
+        from data.multi_dataset import MultiDataset
+        dataset = MultiDataset()
     else:
         raise ValueError("Dataset [%s] not recognized." % opt.dataset_mode)
 
