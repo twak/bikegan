@@ -68,10 +68,11 @@ def rmrf (file):
             os.remove(f)
 
 class RunG(FileSystemEventHandler):
-    def __init__(self, model, opt, fit_boxes=None):
+    def __init__(self, model, opt, fit_boxes, directory):
         self.model = model
         self.opt = opt
         self.fit_boxes = fit_boxes
+        self.directory = directory
 
     def on_created(self, event): # when file is created
         # do something, eg. call your function to process the image
@@ -100,30 +101,30 @@ class RunG(FileSystemEventHandler):
 
             for i, data in enumerate(dataset):
                 # try:
-                    zs = os.path.basename ( data['A_paths'][0] )[:-4].split("_") [1:]
-                    z = np.array ( [float(i) for i in zs], dtype = np.float32 )
+                zs = os.path.basename ( data['A_paths'][0] )[:-4].split("_") [1:]
+                z = np.array ( [float(i) for i in zs], dtype = np.float32 )
 
-                    self.model.set_input(data)
+                self.model.set_input(data)
 
-                    _, real_A, fake_B, real_B, _ = self.model.test_simple( z, encode_real_B=False)
+                _, real_A, fake_B, real_B, _ = self.model.test_simple( z, encode_real_B=False)
 
-                    img_path = self.model.get_image_paths()
-                    print('%04d: process image... %s' % (i, img_path))
+                img_path = self.model.get_image_paths()
+                print('%04d: process image... %s' % (i, img_path))
 
-                    save_image( fake_B, "./output/%s/%s/%s" % (self.opt.name,name, os.path.basename(img_path[0]) ) )
-                    save_image(real_A, "./output/%s/%s/%s_label" % (self.opt.name, name, os.path.basename(img_path[0])))
+                save_image( fake_B, "./output/%s/%s/%s" % (self.directory, name, os.path.basename(img_path[0]) ) )
+                save_image(real_A, "./output/%s/%s/%s_label" % (self.directory, name, os.path.basename(img_path[0])))
 
-                    if self.fit_boxes is not None:
-                        fit_boxes(fake_B, self.fit_boxes, "./output/%s/%s/%s_boxes" % (self.opt.name, name, os.path.basename(img_path[0])))
+                if self.fit_boxes is not None:
+                    fit_boxes(fake_B, self.fit_boxes, "./output/%s/%s/%s_boxes" % (self.directory, name, os.path.basename(img_path[0])))
 
-                # except Exception as e:
-                #     print(e)
+        except Exception as e:
+            traceback.print_exc()
+            print(e)
 
-            os.remove(go)
-
-            rmrf('./input/%s/val/*' % self.opt.name)
-
-
+        try:
+            rmrf('./input/%s/val/*' % self.directory)
+            if os.path.isfile(go):
+                os.remove(go)
         except Exception as e:
             traceback.print_exc()
             print(e)
@@ -131,9 +132,10 @@ class RunG(FileSystemEventHandler):
 
 class RunE(FileSystemEventHandler):
 
-    def __init__(self, model, opt):
+    def __init__(self, model, opt, directory):
         self.model = model
         self.opt = opt
+        self.directory = directory
 
     def on_created(self, event):  # when file is created
         # do something, eg. call your function to process the image
@@ -162,7 +164,7 @@ class RunE(FileSystemEventHandler):
             img_path = self.model.get_image_paths()
             print('%04d: process image... %s' % (i, img_path))
 
-            outfile = "./output/%s/%s/%s" % (self.opt.name, name, "_".join([str (s) for s in z[0]]) )
+            outfile = "./output/%s/%s/%s" % (self.directory, name, "_".join([str (s) for s in z[0]]) )
             try:
                 os.makedirs(os.path.dirname(outfile), exist_ok=True)
             except:
@@ -170,13 +172,17 @@ class RunE(FileSystemEventHandler):
 
             touch (outfile)
 
-        os.remove(go)
-
-        rmrf('./input/%s/val/*' % self.opt.name)
+        try:
+            rmrf('./input/%s/val/*' % self.directory)
+            if os.path.isfile(go):
+                os.remove(go)
+        except Exception as e:
+            traceback.print_exc()
+            print(e)
 
 
 class Interactive():
-    def __init__(self, name, size=256, which_model_netE='resnet_256', which_direction="BtoA",
+    def __init__(self, directory, name, size=256, which_model_netE='resnet_256', which_direction="BtoA",
                  fit_boxes=None, lbl_classes=None,
                  walldist_condition=False, imgpos_condition=False, noise_condition=False,
                  window_condition=False, metrics_condition=False, empty_facade_condition=False,
@@ -197,7 +203,7 @@ class Interactive():
         optG.G_path = "./checkpoints/%s/latest_net_G.pth" % optG.name
         optG.E_path = "./checkpoints/%s/latest_net_E.pth" % optG.name
 
-        optG.dataroot = "./input/%s/" % optG.name
+        optG.dataroot = "./input/%s/" % directory
         optG.no_flip = True
         optG.lbl_classes = lbl_classes
         optG.walldist_condition = walldist_condition
@@ -240,19 +246,19 @@ class Interactive():
         self.optE = optE
         self.model = model
 
-        _thread.start_new_thread(self.go, (name, size, fit_boxes))
+        _thread.start_new_thread(self.go, (directory, name, size, fit_boxes))
 
-    def go (self, name, size, fit_boxes):
+    def go (self, directory, name, size, fit_boxes):
 
         observer = Observer()
 
-        input_folder = './input/%s/' % self.optG.name
+        input_folder = './input/%s/' % directory
         os.makedirs(input_folder + "val", exist_ok=True)
-        observer.schedule(RunG(self.model, self.optG, fit_boxes), path=input_folder+"val/")
+        observer.schedule(RunG(self.model, self.optG, fit_boxes, directory), path=input_folder+"val/")
 
-        input_folder_e = './input/%s/' % self.optE.name
+        input_folder_e = './input/%s_e/' % directory
         os.makedirs(input_folder_e+"val", exist_ok=True)
-        observer.schedule(RunE(self.model, self.optE), path=input_folder_e+"val/")
+        observer.schedule(RunE(self.model, self.optE, directory+"_e" ), path=input_folder_e+"val/")
         observer.start()
 
         # sleep until keyboard interrupt, then stop + rejoin the observer
@@ -265,15 +271,15 @@ class Interactive():
         observer.join()
 
 # Interactive ("bike_2", pytorch_v2 = True)
-Interactive ("roofs6", 512, 'resnet_512', pytorch_v2 = True)
-Interactive ("super6", pytorch_v2 = True) # walls
-Interactive ("super9", pytorch_v2 = True) # facades
-Interactive ("dows2", pytorch_v2 = True)
-Interactive ("dows1", pytorch_v2 = True)
+Interactive ( "roof", "roofs6", 512, 'resnet_512', pytorch_v2 = True)
+Interactive ( "facade super", "super6", pytorch_v2 = True) # walls
+# Interactive ("", ""super9", pytorch_v2 = True) # facades
+Interactive ( "pane labels","dows2", pytorch_v2 = True)
+Interactive ( "pane textures", "dows1", pytorch_v2 = True)
 # Interactive ("blank", fit_boxes=blank_classes )
-Interactive ("empty2windows_f005", lbl_classes=cmp_classes, imgpos_condition=True, walldist_condition=True, norm='instance_track', fit_boxes=blank_classes, dataset_mode='multi')
+Interactive ( "facade labels", "empty2windows_f005", lbl_classes=cmp_classes, imgpos_condition=True, walldist_condition=True, norm='instance_track', fit_boxes=blank_classes, dataset_mode='multi')
 # Interactive ("empty2windows_f005", lbl_classes=cmp_classes, imgpos_condition=True, walldist_condition=True, norm='instance_track', fit_boxes=blank_classes, dataset_mode='multi')
-Interactive ("facade_windows_f000", norm='instance_track', fit_boxes=blank_classes, dataset_mode='multi')
+Interactive ( "facade textures", "facade_windows_f000", norm='instance_track', fit_boxes=blank_classes, dataset_mode='multi')
 # Interactive ("image2clabels_f001", norm='instance_track', fit_boxes=blank_classes, nz=0, dataset_mode='multi')
 
 
