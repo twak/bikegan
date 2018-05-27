@@ -17,8 +17,6 @@ class MultiDataset(BaseDataset):
         self.center_crop = opt.center_crop
         self.dir_AB = os.path.join(opt.dataroot, opt.phase)
         self.AB_paths = sorted(make_dataset(self.dir_AB))
-        if self.opt.metrics_condition:
-            self.facade_color = [c.color for c in self.opt.lbl_classes if c.name == 'facade']
 
         assert opt.resize_or_crop == 'resize_and_crop'
 
@@ -37,12 +35,12 @@ class MultiDataset(BaseDataset):
             mlabels = mlabels.resize((self.opt.loadSize, self.opt.loadSize), Image.BICUBIC)
             mlabels = transforms.ToTensor()(mlabels)
         if self.opt.metrics_condition:
-            # load empty facade mask
+            # load empty mask
             metrics_path = ''
             empty_path = os.path.join(self.opt.empty_dataroot, os.path.relpath(self.AB_paths[index], self.root))
             metrics_mask = cv2.imread(empty_path, cv2.IMREAD_COLOR)
             metrics_mask = metrics_mask[:, :, [2, 1, 0]] # convert from BGR to RGB
-            metrics_mask = (metrics_mask == self.facade_color).all(axis=2).astype(np.uint8)
+            metrics_mask = (metrics_mask == self.opt.metrics_mask_color).all(axis=2).astype(np.uint8)
             metrics_mask = cv2.resize(metrics_mask, (self.opt.loadSize, self.opt.loadSize), interpolation=cv2.INTER_LINEAR).astype(np.uint8)
 
             if '@' in os.path.basename(os.path.splitext(self.AB_paths[index])[0]):

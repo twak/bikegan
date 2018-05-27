@@ -40,10 +40,28 @@ cmp_classes = [
     LabelClass('deco', [255, 170, 0], 12),  # deco (id 12)
 ]
 
+cmp_greeble_classes = [
+    LabelClass('window', [0, 85, 255], 6),  # window (id 6)
+    LabelClass('door', [0, 170, 255], 7),  # door (id 7)
+    LabelClass('sill', [85, 255, 170], 8),  # sill (id 8)
+    LabelClass('balcony', [170, 255, 85], 10),  # balcony (id 10)
+    LabelClass('shop', [170, 0, 0], 11),  # shop (id 11)
+]
+
+roof_greeble_classes = [
+    LabelClass('velux', [0, 0, 255], 0),  # black borders or sky (id 0)
+    LabelClass('chimney', [255, 200, 0], 1),  # background (id 1)
+]
+
 blank_classes = [
     LabelClass('other' , [0,   0,   0], 0),
-    LabelClass('wall'  , [0,   0, 255], 0),
-    LabelClass('window', [0, 255,   0], 0),
+    LabelClass('wall'  , [0,   0, 255], 1),
+    LabelClass('window', [0, 255,   0], 2),
+]
+
+pane_classes = [
+    LabelClass('frame' , [255,   0,   0], 0),
+    LabelClass('pane'  , [0,   0, 255], 1),
 ]
 
 def save_image(image_numpy, image_path):
@@ -185,7 +203,7 @@ class Interactive():
                  fit_boxes=None, lbl_classes=None,
                  walldist_condition=False, imgpos_condition=False, noise_condition=False,
                  empty_condition=False, mlabel_condition=False, metrics_condition=False,
-                 norm='instance', nz=8, pytorch_v2=False, dataset_mode='aligned',
+                 metrics_mask_color=None, norm='instance', nz=8, pytorch_v2=False, dataset_mode='aligned',
                  normalize_metrics=False, normalize_metrics2=False):
 
         # options
@@ -212,6 +230,7 @@ class Interactive():
         optG.mlabel_condition = mlabel_condition
         optG.metrics_condition = metrics_condition
         optG.empty_condition = empty_condition
+        optG.metrics_mask_color = metrics_mask_color
         optG.normalize_metrics = normalize_metrics
         optG.normalize_metrics2 = normalize_metrics2
         optG.norm = norm
@@ -276,6 +295,7 @@ class Interactive():
 
 # #------------------------------------------#
 # # original set:
+# #------------------------------------------#
 # # Interactive ("bike_2", pytorch_v2 = True)
 # Interactive ( "roof", "roofs6", 512, 'resnet_512', pytorch_v2 = True)
 # Interactive ( "facade super", "super6", pytorch_v2 = True) # walls
@@ -290,23 +310,64 @@ class Interactive():
 # #------------------------------------------#
 
 
-#------------------------------------------#
-# original set with new facade texture -> greebles network:
-Interactive("roof", "roofs6", 512, 'resnet_512', pytorch_v2 = True)
-Interactive("facade super", "super6", pytorch_v2 = True) # walls
-Interactive("pane labels","dows2", pytorch_v2 = True)
-Interactive("pane textures", "dows1", pytorch_v2 = True)
-Interactive("facade labels", "empty2windows_f005", lbl_classes=cmp_classes, imgpos_condition=True, walldist_condition=True, norm='instance_track', fit_boxes=blank_classes, dataset_mode='multi')
-Interactive("facade textures", "facade_windows_f000", norm='instance_track', fit_boxes=blank_classes, dataset_mode='multi')
-Interactive("facade greeble labels", "image2clabels_f005_200",
-            dataset_mode='multi', nz=0, lbl_classes=cmp_classes, fit_boxes=blank_classes,
-            empty_condition=True, mlabel_condition=True, metrics_condition=True)
-#------------------------------------------#
+# #------------------------------------------#
+# # original set with new facade texture -> greebles network:
+# #------------------------------------------#
+# Interactive("roof", "roofs6", 512, 'resnet_512', pytorch_v2 = True)
+# Interactive("facade super", "super6", pytorch_v2 = True) # walls
+# Interactive("pane labels","dows2", pytorch_v2 = True)
+# Interactive("pane textures", "dows1", pytorch_v2 = True)
+# Interactive("facade labels", "empty2windows_f005", lbl_classes=cmp_classes, imgpos_condition=True, walldist_condition=True, norm='instance_track', fit_boxes=blank_classes, dataset_mode='multi')
+# Interactive("facade textures", "facade_windows_f000", norm='instance_track', fit_boxes=blank_classes, dataset_mode='multi')
+# Interactive("facade greeble labels", "image2clabels_f005_200",
+#             dataset_mode='multi', fit_boxes=cmp_greeble_classes,
+#             empty_condition=True, mlabel_condition=True, metrics_condition=True,
+#             metrics_mask_color=[0, 0, 255], nz=0)
+# #------------------------------------------#
 
 
 #------------------------------------------#
 # latest set: (27 May):
+#------------------------------------------#
+Interactive("roof greeble labels", "r3_clabels2labels_f001_235",
+            size=512, which_model_netE='resnet_512',
+            dataset_mode='multi', fit_boxes=roof_greeble_classes,
+            empty_condition=True, metrics_condition=True, imgpos_condition=True, noise_condition=True,
+            metrics_mask_color=[0, 0, 255], normalize_metrics=True)
 
+Interactive("roof", "r3_labels2image_f001_165",
+            size=512, which_model_netE='resnet_512',
+            dataset_mode='multi',
+            empty_condition=True, metrics_condition=True, imgpos_condition=True,
+            metrics_mask_color=[0, 0, 255], normalize_metrics=True)
+
+Interactive("facade super", "super6",
+            pytorch_v2=True) # walls
+
+Interactive("pane labels", "w3_empty2labels_f009_200",
+            dataset_mode='multi', fit_boxes=pane_classes,
+            empty_condition=True, metrics_condition=True, imgpos_condition=True,
+            metrics_mask_color=[255, 0, 0])
+
+Interactive("pane textures", "w3_labels2image_f013_400",
+            dataset_mode='multi',
+            empty_condition=True, metrics_condition=True, imgpos_condition=True,
+            metrics_mask_color=[255, 0, 0])
+
+Interactive("facade labels", "empty2windows_f009v2_210",
+            dataset_mode='multi', fit_boxes=blank_classes,
+            empty_condition=True, metrics_condition=True, imgpos_condition=True,
+            metrics_mask_color=[0, 0, 255])
+
+Interactive("facade textures", "facade_windows_f013v2_150",
+            dataset_mode='multi',
+            empty_condition=True, metrics_condition=True, imgpos_condition=True,
+            metrics_mask_color=[0, 0, 255])
+
+Interactive("facade greeble labels", "image2clabels_f005_200",
+            dataset_mode='multi', fit_boxes=cmp_greeble_classes,
+            empty_condition=True, metrics_condition=True, mlabel_condition=True,
+            metrics_mask_color=[0, 0, 255], nz=0)
 #------------------------------------------#
 
 
