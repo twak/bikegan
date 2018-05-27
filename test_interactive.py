@@ -79,39 +79,38 @@ class RunG(FileSystemEventHandler):
         print ("Got G event for file %s" % event.src_path)
 
         try:
+            go = os.path.abspath(os.path.join (event.src_path, os.pardir, "go"))
 
-            go = os.path.abspath( os.path.join (event.src_path, os.pardir, "go") )
-
-            if not os.path.isfile( go ):
+            if not os.path.isfile(go):
                 return
 
-            with open (go) as f:
+            with open(go) as f:
                 name = f.readlines()[0]
 
             print("starting to process %s" % name)
 
-            if self.opt.window_condition:
-                self.opt.window_dataroot = os.path.join(self.opt.dataroot, 'windows')
+            if self.opt.mlabel_condition:
+                self.opt.mlabel_dataroot = self.opt.dataroot.rstrip('/\\')+'_mlabels'
 
-            if self.opt.metrics_condition or self.opt.empty_facade_condition:
-                self.opt.empty_dataroot = os.path.join(self.opt.dataroot, 'empty')
+            if self.opt.metrics_condition or self.opt.empty_condition:
+                self.opt.empty_dataroot = self.opt.dataroot.rstrip('/\\')+'_empty'
 
             data_loader = CreateDataLoader(self.opt)
             dataset = data_loader.load_data()
 
             for i, data in enumerate(dataset):
                 # try:
-                zs = os.path.basename ( data['A_paths'][0] )[:-4].split("_") [1:]
-                z = np.array ( [float(i) for i in zs], dtype = np.float32 )
+                zs = os.path.basename(data['A_paths'][0])[:-4].split("_")[1:]
+                z = np.array([float(i) for i in zs], dtype=np.float32)
 
                 self.model.set_input(data)
 
-                _, real_A, fake_B, real_B, _ = self.model.test_simple( z, encode_real_B=False)
+                _, real_A, fake_B, real_B, _ = self.model.test_simple(z, encode_real_B=False)
 
                 img_path = self.model.get_image_paths()
                 print('%04d: process image... %s' % (i, img_path))
 
-                save_image( fake_B, "./output/%s/%s/%s" % (self.directory, name, os.path.basename(img_path[0]) ) )
+                save_image(fake_B, "./output/%s/%s/%s" % (self.directory, name, os.path.basename(img_path[0])))
                 save_image(real_A, "./output/%s/%s/%s_label" % (self.directory, name, os.path.basename(img_path[0])))
 
                 if self.fit_boxes is not None:
@@ -185,8 +184,9 @@ class Interactive():
     def __init__(self, directory, name, size=256, which_model_netE='resnet_256', which_direction="BtoA",
                  fit_boxes=None, lbl_classes=None,
                  walldist_condition=False, imgpos_condition=False, noise_condition=False,
-                 window_condition=False, metrics_condition=False, empty_facade_condition=False,
-                 norm='instance', nz=8, pytorch_v2 = False, dataset_mode='aligned'):
+                 empty_condition=False, mlabel_condition=False, metrics_condition=False,
+                 norm='instance', nz=8, pytorch_v2=False, dataset_mode='aligned',
+                 normalize_metrics=False, normalize_metrics2=False):
 
         # options
         optG = TestOptions().parse()
@@ -209,9 +209,11 @@ class Interactive():
         optG.walldist_condition = walldist_condition
         optG.imgpos_condition = imgpos_condition
         optG.noise_condition = noise_condition
-        optG.window_condition = window_condition
+        optG.mlabel_condition = mlabel_condition
         optG.metrics_condition = metrics_condition
-        optG.empty_facade_condition = empty_facade_condition
+        optG.empty_condition = empty_condition
+        optG.normalize_metrics = normalize_metrics
+        optG.normalize_metrics2 = normalize_metrics2
         optG.norm = norm
         optG.nz = nz
         optG.dataset_mode = dataset_mode
@@ -226,13 +228,13 @@ class Interactive():
         if optG.noise_condition:
             optG.input_nc += 1 # 1 wall noise channel
 
-        if optG.window_condition:
+        if optG.mlabel_condition:
             optG.input_nc += 3 # 3 additional channels: RGB
 
         if optG.metrics_condition:
             optG.input_nc += 6 # 6 additional channels
 
-        if optG.empty_facade_condition:
+        if optG.empty_condition:
             optG.input_nc += 3 # 3 additional channels: RGB
 
         optE = copy.deepcopy(optG)
@@ -248,7 +250,9 @@ class Interactive():
 
         _thread.start_new_thread(self.go, (directory, name, size, fit_boxes))
 
-    def go (self, directory, name, size, fit_boxes):
+    def go(self, directory, name, size, fit_boxes):
+
+        print('[network %s is waiting for input]' % name)
 
         observer = Observer()
 
@@ -258,7 +262,7 @@ class Interactive():
 
         input_folder_e = './input/%s_e/' % directory
         os.makedirs(input_folder_e+"val", exist_ok=True)
-        observer.schedule(RunE(self.model, self.optE, directory+"_e" ), path=input_folder_e+"val/")
+        observer.schedule(RunE(self.model, self.optE, directory+"_e"), path=input_folder_e+"val/")
         observer.start()
 
         # sleep until keyboard interrupt, then stop + rejoin the observer
@@ -270,38 +274,41 @@ class Interactive():
 
         observer.join()
 
-# Interactive ("bike_2", pytorch_v2 = True)
-Interactive ( "roof", "roofs6", 512, 'resnet_512', pytorch_v2 = True)
-Interactive ( "facade super", "super6", pytorch_v2 = True) # walls
-# Interactive ("", ""super9", pytorch_v2 = True) # facades
-Interactive ( "pane labels","dows2", pytorch_v2 = True)
-Interactive ( "pane textures", "dows1", pytorch_v2 = True)
-# Interactive ("blank", fit_boxes=blank_classes )
-Interactive ( "facade labels", "empty2windows_f005", lbl_classes=cmp_classes, imgpos_condition=True, walldist_condition=True, norm='instance_track', fit_boxes=blank_classes, dataset_mode='multi')
-# Interactive ("empty2windows_f005", lbl_classes=cmp_classes, imgpos_condition=True, walldist_condition=True, norm='instance_track', fit_boxes=blank_classes, dataset_mode='multi')
-Interactive ( "facade textures", "facade_windows_f000", norm='instance_track', fit_boxes=blank_classes, dataset_mode='multi')
-# Interactive ("image2clabels_f001", norm='instance_track', fit_boxes=blank_classes, nz=0, dataset_mode='multi')
+# #------------------------------------------#
+# # original set:
+# # Interactive ("bike_2", pytorch_v2 = True)
+# Interactive ( "roof", "roofs6", 512, 'resnet_512', pytorch_v2 = True)
+# Interactive ( "facade super", "super6", pytorch_v2 = True) # walls
+# # Interactive ("", ""super9", pytorch_v2 = True) # facades
+# Interactive ( "pane labels","dows2", pytorch_v2 = True)
+# Interactive ( "pane textures", "dows1", pytorch_v2 = True)
+# # Interactive ("blank", fit_boxes=blank_classes )
+# Interactive ( "facade labels", "empty2windows_f005", lbl_classes=cmp_classes, imgpos_condition=True, walldist_condition=True, norm='instance_track', fit_boxes=blank_classes, dataset_mode='multi')
+# # Interactive ("empty2windows_f005", lbl_classes=cmp_classes, imgpos_condition=True, walldist_condition=True, norm='instance_track', fit_boxes=blank_classes, dataset_mode='multi')
+# Interactive ( "facade textures", "facade_windows_f000", norm='instance_track', fit_boxes=blank_classes, dataset_mode='multi')
+# # Interactive ("image2clabels_f001", norm='instance_track', fit_boxes=blank_classes, nz=0, dataset_mode='multi')
+# #------------------------------------------#
 
 
-# filename should be ...  @unit_size_  ...
-# the unit_size should be the floor height / frame width as a fraction of the image height
+#------------------------------------------#
+# original set with new facade texture -> greebles network:
+Interactive("roof", "roofs6", 512, 'resnet_512', pytorch_v2 = True)
+Interactive("facade super", "super6", pytorch_v2 = True) # walls
+Interactive("pane labels","dows2", pytorch_v2 = True)
+Interactive("pane textures", "dows1", pytorch_v2 = True)
+Interactive("facade labels", "empty2windows_f005", lbl_classes=cmp_classes, imgpos_condition=True, walldist_condition=True, norm='instance_track', fit_boxes=blank_classes, dataset_mode='multi')
+Interactive("facade textures", "facade_windows_f000", norm='instance_track', fit_boxes=blank_classes, dataset_mode='multi')
+Interactive("facade greeble labels", "image2clabels_f005_200",
+            dataset_mode='multi', nz=0, lbl_classes=cmp_classes, fit_boxes=blank_classes,
+            empty_condition=True, mlabel_condition=True, metrics_condition=True)
+#------------------------------------------#
 
-# # not working well with random z's in a few cases, and may be ignoring facade size
-# Interactive (
-#     "empty2windows_f009",
-#     lbl_classes=cmp_classes, fit_boxes=blank_classes,
-#     imgpos_condition=True, metrics_condition=True, empty_facade_condition=True, dataset_mode='multi')
 
-# not working with random z's - need to investigate
-# Interactive (
-#     "facade_windows_f013_60",
-#     lbl_classes=cmp_classes, fit_boxes=blank_classes,
-#     imgpos_condition=True, metrics_condition=True, empty_facade_condition=True, dataset_mode='multi')
+#------------------------------------------#
+# latest set: (27 May):
 
-# Interactive (
-#     "image2clabels_f005",
-#     lbl_classes=cmp_classes, fit_boxes=blank_classes,
-#     window_condition=True, metrics_condition=True, empty_facade_condition=True, dataset_mode='multi', nz=0)
+#------------------------------------------#
+
 
 while True:
     time.sleep(600)

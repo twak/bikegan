@@ -55,8 +55,8 @@ class BaseOptions():
         self.parser.add_argument('--walldist_condition', action='store_true', help='use distance from wall as condition in G and D networks')
         self.parser.add_argument('--noise_condition', action='store_true', help='use distance from wall as condition in G and D networks')
         self.parser.add_argument('--metrics_condition', type=str, nargs='*', default=[], help='use facade metrics as condition in G and D networks (give data root here or empty for none)')
-        self.parser.add_argument('--empty_facade_condition', type=str, default='', help='use empty facade as condition in in G and D networks (give data root here or empty for none)')
-        self.parser.add_argument('--window_condition', type=str, default='', help='use windows as condition in G and D networks (give data root here or empty for none)')
+        self.parser.add_argument('--empty_condition', type=str, default='', help='use empty facade as condition in in G and D networks (give data root here or empty for none)')
+        self.parser.add_argument('--mlabel_condition', type=str, default='', help='use mlabels as condition in G and D networks (give data root here or empty for none)')
         self.parser.add_argument('--init_type', type=str, default='xavier', help='network initialization [normal|xavier|kaiming|orthogonal]')
         self.parser.add_argument('--center_crop', action='store_true', help='if apply for center cropping for the test')
 
@@ -81,10 +81,10 @@ class BaseOptions():
 
         args = vars(self.opt)
 
-        print('------------ Options -------------')
-        for k, v in sorted(args.items()):
-            print('%s: %s' % (str(k), str(v)))
-        print('-------------- End ----------------')
+        # print('------------ Options -------------')
+        # for k, v in sorted(args.items()):
+        #     print('%s: %s' % (str(k), str(v)))
+        # print('-------------- End ----------------')
 
         if self.isTrain:
             expr_dir = os.path.join(self.opt.checkpoints_dir, self.opt.name)

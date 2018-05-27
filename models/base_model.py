@@ -45,7 +45,7 @@ class BaseModel():
                                       norm=opt.norm, nl=opt.nl, use_dropout=opt.use_dropout, init_type=opt.init_type,
                                       gpu_ids=self.gpu_ids, where_add=self.opt.where_add, upsample=opt.upsample)
 
-        networks.print_network(self.netG)
+        # networks.print_network(self.netG)
         self.netD, self.netD2, self.netE = None, None, None
 
         use_sigmoid = opt.gan_mode == 'dcgan'
@@ -60,13 +60,13 @@ class BaseModel():
                                           which_model_netD=opt.which_model_netD,
                                           norm=opt.norm, nl=opt.nl,
                                           use_sigmoid=use_sigmoid, init_type=opt.init_type, num_Ds=opt.num_Ds, gpu_ids=self.gpu_ids)
-            networks.print_network(self.netD)
+            # networks.print_network(self.netD)
         if use_D2:
             self.netD2 = networks.define_D(D_output_nc, opt.ndf,
                                            which_model_netD=opt.which_model_netD2,
                                            norm=opt.norm, nl=opt.nl,
                                            use_sigmoid=use_sigmoid, init_type=opt.init_type, num_Ds=opt.num_Ds, gpu_ids=self.gpu_ids)
-            networks.print_network(self.netD2)
+            # networks.print_network(self.netD2)
 
         # define E
         if use_E:
@@ -75,7 +75,7 @@ class BaseModel():
                                           norm=opt.norm, nl=opt.nl,
                                           init_type=opt.init_type, gpu_ids=self.gpu_ids,
                                           vaeLike=use_vae)
-            networks.print_network(self.netE)
+            # networks.print_network(self.netE)
 
         if not opt.isTrain:
             self.load_network_test(self.netG, opt.G_path, opt.pytorch_v2)
@@ -242,10 +242,10 @@ class BaseModel():
 
         if self.opt.walldist_condition:
             self.input_walldist = self.compute_walldist(self.input_A)
-        if self.opt.window_condition:
-            self.input_window = input['window']
+        if self.opt.mlabel_condition:
+            self.input_mlabel = input['mlabel']
             if len(self.gpu_ids) > 0:
-                self.input_window = self.input_window.cuda(self.gpu_ids[0])
+                self.input_mlabel = self.input_mlabel.cuda(self.gpu_ids[0])
         if self.opt.noise_condition:
             self.input_noise = torch.randn(self.input_A.size(0), 1, self.input_A.size(2), self.input_A.size(3))
             if len(self.gpu_ids) > 0:
@@ -254,7 +254,7 @@ class BaseModel():
             self.input_facade_metrics = input['metrics']
             if len(self.gpu_ids) > 0:
                 self.input_facade_metrics = self.input_facade_metrics.cuda(self.gpu_ids[0])
-        if self.opt.empty_facade_condition:
+        if self.opt.empty_condition:
             self.input_empty_facade = input['empty']
             if len(self.gpu_ids) > 0:
                 self.input_empty_facade = self.input_empty_facade.cuda(self.gpu_ids[0])
@@ -272,13 +272,13 @@ class BaseModel():
                 self.G_input = torch.cat([self.imgpos, self.G_input], dim=1)
             if self.opt.walldist_condition:
                 self.G_input = torch.cat([self.input_walldist, self.G_input], dim=1)
-            if self.opt.window_condition:
-                self.G_input = torch.cat([self.input_window, self.G_input], dim=1)
+            if self.opt.mlabel_condition:
+                self.G_input = torch.cat([self.input_mlabel, self.G_input], dim=1)
             if self.opt.noise_condition:
                 self.G_input = torch.cat([self.input_noise, self.G_input], dim=1)
             if self.opt.metrics_condition:
                 self.G_input = torch.cat([self.input_facade_metrics, self.G_input], dim=1)
-            if self.opt.empty_facade_condition:
+            if self.opt.empty_condition:
                 self.G_input = torch.cat([self.input_empty_facade, self.G_input], dim=1)
 
             if self.opt.nz > 0:
