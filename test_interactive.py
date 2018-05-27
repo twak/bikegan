@@ -236,7 +236,7 @@ class Interactive():
             optG.input_nc += 3 # 3 additional channels: RGB
 
         optE = copy.deepcopy(optG)
-        optE.dataroot = "./input/%s_e/" % optG.name
+        optE.dataroot = "./input/%s_e/" % directory
         optE.name = optG.name + "_e"
 
         model = create_model(optG)
