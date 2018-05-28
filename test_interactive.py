@@ -41,6 +41,7 @@ cmp_classes = [
 ]
 
 cmp_greeble_classes = [
+    LabelClass('other', [0, 0, 0], 0),  # black borders or sky (id 0)
     LabelClass('window', [0, 85, 255], 6),  # window (id 6)
     LabelClass('door', [0, 170, 255], 7),  # door (id 7)
     LabelClass('sill', [85, 255, 170], 8),  # sill (id 8)
@@ -48,9 +49,21 @@ cmp_greeble_classes = [
     LabelClass('shop', [170, 0, 0], 11),  # shop (id 11)
 ]
 
+cmp_greeble_classes_extended = [
+    LabelClass('other', [0, 0, 0], 0),  # black borders or sky (id 0)
+    LabelClass('window', [0, 85, 255], 6),  # window (id 6)
+    LabelClass('door', [0, 170, 255], 7),  # door (id 7)
+    LabelClass('sill', [85, 255, 170], 8),  # sill (id 8)
+    LabelClass('balcony', [170, 255, 85], 10),  # balcony (id 10)
+    LabelClass('shop', [170, 0, 0], 11),  # shop (id 11)
+    LabelClass('molding', [255, 85, 0], 3),  # molding (id 3)
+    LabelClass('cornice', [0, 255, 255], 4),  # cornice (id 4)
+]
+
 roof_greeble_classes = [
-    LabelClass('velux', [0, 0, 255], 0),  # black borders or sky (id 0)
-    LabelClass('chimney', [255, 200, 0], 1),  # background (id 1)
+    LabelClass('other', [0, 0, 0], 0),  # black borders or sky (id 0)
+    LabelClass('velux', [0, 0, 255], 1),  # black borders or sky (id 0)
+    LabelClass('chimney', [255, 200, 0], 2),  # background (id 1)
 ]
 
 blank_classes = [
@@ -60,8 +73,9 @@ blank_classes = [
 ]
 
 pane_classes = [
-    LabelClass('frame' , [255,   0,   0], 0),
-    LabelClass('pane'  , [0,   0, 255], 1),
+    LabelClass('other', [0, 0, 0], 0),  # black borders or sky (id 0)
+    LabelClass('frame' , [255,   0,   0], 1),
+    LabelClass('pane'  , [0,   0, 255], 2),
 ]
 
 def save_image(image_numpy, image_path):
