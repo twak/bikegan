@@ -80,10 +80,13 @@ def touch(fname, times=None):
         os.utime(fname, times)
 
 def rmrf (file):
-    files = glob.glob(file)
-    for f in files:
-        if os.path.isfile(f):
-            os.remove(f)
+    try:
+        files = glob.glob(file)
+        for f in files:
+            if os.path.isfile(f):
+                os.remove(f)
+    except:
+        pass
 
 class RunG(FileSystemEventHandler):
     def __init__(self, model, opt, fit_boxes, directory):
@@ -140,6 +143,9 @@ class RunG(FileSystemEventHandler):
 
         try:
             rmrf('./input/%s/val/*' % self.directory)
+            rmrf('./input/%s_empty/val/*' % self.directory)
+            rmrf('./input/%s_mlabel/val/*' % self.directory)
+
             if os.path.isfile(go):
                 os.remove(go)
         except Exception as e:
@@ -190,7 +196,8 @@ class RunE(FileSystemEventHandler):
             touch (outfile)
 
         try:
-            rmrf('./input/%s/val/*' % self.directory)
+            rmrf('./input/%s_e/val/*' % self.directory)
+
             if os.path.isfile(go):
                 os.remove(go)
         except Exception as e:
@@ -332,7 +339,8 @@ class Interactive():
 Interactive("roof greeble labels", "r3_clabels2labels_f001_235",
             size=512, which_model_netE='resnet_512',
             dataset_mode='multi', fit_boxes=roof_greeble_classes,
-            empty_condition=True, metrics_condition=True, imgpos_condition=True, noise_condition=True,
+            empty_condition=True, metrics_condition=True, imgpos_condition=True,
+            noise_condition=True,
             metrics_mask_color=[0, 0, 255], normalize_metrics=True)
 
 Interactive("roof", "r3_labels2image_f001_165",
@@ -340,9 +348,6 @@ Interactive("roof", "r3_labels2image_f001_165",
             dataset_mode='multi',
             empty_condition=True, metrics_condition=True, imgpos_condition=True,
             metrics_mask_color=[0, 0, 255], normalize_metrics=True)
-
-Interactive("facade super", "super6",
-            pytorch_v2=True) # walls
 
 Interactive("pane labels", "w3_empty2labels_f009_200",
             dataset_mode='multi', fit_boxes=pane_classes,
@@ -368,8 +373,14 @@ Interactive("facade greeble labels", "image2clabels_f005_200",
             dataset_mode='multi', fit_boxes=cmp_greeble_classes,
             empty_condition=True, metrics_condition=True, mlabel_condition=True,
             metrics_mask_color=[0, 0, 255], nz=0)
+
+Interactive("facade super", "super6", pytorch_v2=True)
+
+Interactive("roof super", "super9", pytorch_v2=True)
+
 #------------------------------------------#
 
+print("all nets up")
 
 while True:
     time.sleep(600)

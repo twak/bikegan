@@ -34,6 +34,7 @@ class MultiDataset(BaseDataset):
             mlabels = Image.open(mlabel_path).convert('RGB')
             mlabels = mlabels.resize((self.opt.loadSize, self.opt.loadSize), Image.BICUBIC)
             mlabels = transforms.ToTensor()(mlabels)
+
         if self.opt.metrics_condition:
             # load empty mask
             metrics_path = ''
