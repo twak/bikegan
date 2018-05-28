@@ -17,7 +17,8 @@ from PIL import Image
 
 import copy
 import _thread
-from util.fit_boxes import fit_boxes, LabelClass
+from util.fit_boxes import fit_boxes, LabelClass, LabelFit
+from util.fit_circles import fit_circles
 
 import traceback
 
@@ -39,44 +40,33 @@ cmp_classes = [
     LabelClass('shop', [170, 0, 0], 11),  # shop (id 11)
     LabelClass('deco', [255, 170, 0], 12),  # deco (id 12)
 ]
+fit_cmp_labels = {'window':LabelFit(-1), 'door':LabelFit(-1), 'sill':LabelFit(-1), 'balcony':LabelFit(-1), 'shop':LabelFit(-1)}
+fit_cmp_labels_extended = {'window':LabelFit(-1), 'door':LabelFit(-1), 'sill':LabelFit(-1), 'balcony':LabelFit(-1), 'shop':LabelFit(-1), 'molding':LabelFit(-1), 'cornice':LabelFit(-1)}
 
-cmp_greeble_classes = [
-    LabelClass('other', [0, 0, 0], 0),  # black borders or sky (id 0)
-    LabelClass('window', [0, 85, 255], 6),  # window (id 6)
-    LabelClass('door', [0, 170, 255], 7),  # door (id 7)
-    LabelClass('sill', [85, 255, 170], 8),  # sill (id 8)
-    LabelClass('balcony', [170, 255, 85], 10),  # balcony (id 10)
-    LabelClass('shop', [170, 0, 0], 11),  # shop (id 11)
+roof_classes = [
+    LabelClass('other', [0, 0, 0], 0),
+    LabelClass('flat_roof', [255, 0, 0], 1),
+    LabelClass('slanted_roof', [0, 255, 255], 2),
+    LabelClass('edge', [255, 0, 255], 3),
+    LabelClass('chimney', [255, 200, 0], 4),
+    LabelClass('velux', [0, 0, 255], 5),
 ]
-
-cmp_greeble_classes_extended = [
-    LabelClass('other', [0, 0, 0], 0),  # black borders or sky (id 0)
-    LabelClass('window', [0, 85, 255], 6),  # window (id 6)
-    LabelClass('door', [0, 170, 255], 7),  # door (id 7)
-    LabelClass('sill', [85, 255, 170], 8),  # sill (id 8)
-    LabelClass('balcony', [170, 255, 85], 10),  # balcony (id 10)
-    LabelClass('shop', [170, 0, 0], 11),  # shop (id 11)
-    LabelClass('molding', [255, 85, 0], 3),  # molding (id 3)
-    LabelClass('cornice', [0, 255, 255], 4),  # cornice (id 4)
-]
-
-roof_greeble_classes = [
-    LabelClass('other', [0, 0, 0], 0),  # black borders or sky (id 0)
-    LabelClass('velux', [0, 0, 255], 1),  # black borders or sky (id 0)
-    LabelClass('chimney', [255, 200, 0], 2),  # background (id 1)
-]
+fit_roof_labels = {'velux':LabelFit(max_count=3), 'chimney':LabelFit(max_count=3)}
 
 blank_classes = [
-    LabelClass('other' , [0,   0,   0], 0),
-    LabelClass('wall'  , [0,   0, 255], 1),
+    LabelClass('other', [0,   0,   0], 0),
+    LabelClass('wall', [0,   0, 255], 1),
     LabelClass('window', [0, 255,   0], 2),
 ]
+fit_blank_labels = {'wall':LabelFit(-1), 'window':LabelFit(-1)}
 
 pane_classes = [
     LabelClass('other', [0, 0, 0], 0),  # black borders or sky (id 0)
-    LabelClass('frame' , [255,   0,   0], 1),
-    LabelClass('pane'  , [0,   0, 255], 2),
+    LabelClass('frame', [255,   0,   0], 1),
+    LabelClass('pane', [0,   0, 255], 2),
+    LabelClass('object', [0, 255, 0], 3),
 ]
+fit_pane_labels = {'frame':LabelFit(-1), 'pane':LabelFit(-1), 'object':LabelFit(-1)}
 
 def save_image(image_numpy, image_path):
 
@@ -103,10 +93,11 @@ def rmrf (file):
         pass
 
 class RunG(FileSystemEventHandler):
-    def __init__(self, model, opt, fit_boxes, directory):
+    def __init__(self, model, opt, fit_boxes, fit_circles, directory):
         self.model = model
         self.opt = opt
         self.fit_boxes = fit_boxes
+        self.fit_circles = fit_circles
         self.directory = directory
 
     def on_created(self, event): # when file is created
@@ -135,6 +126,9 @@ class RunG(FileSystemEventHandler):
 
             for i, data in enumerate(dataset):
                 # try:
+
+                print('here')
+
                 zs = os.path.basename(data['A_paths'][0])[:-4].split("_")[1:]
                 z = np.array([float(i) for i in zs], dtype=np.float32)
 
@@ -149,7 +143,14 @@ class RunG(FileSystemEventHandler):
                 save_image(real_A, "./output/%s/%s/%s_label" % (self.directory, name, os.path.basename(img_path[0])))
 
                 if self.fit_boxes is not None:
-                    fit_boxes(fake_B, self.fit_boxes, "./output/%s/%s/%s_boxes" % (self.directory, name, os.path.basename(img_path[0])))
+                    fit_boxes(
+                        img=fake_B, classes=self.fit_boxes[0], fit_labels=self.fit_boxes[1],
+                        json_path="./output/%s/%s/%s_boxes" % (self.directory, name, os.path.basename(img_path[0])))
+
+                if self.fit_circles is not None:
+                    fit_circles(
+                        img=fake_B, classes=self.fit_circles[0], fit_labels=self.fit_circles[1],
+                        json_path="./output/%s/%s/%s_circles" % (self.directory, name, os.path.basename(img_path[0])))
 
         except Exception as e:
             traceback.print_exc()
@@ -221,7 +222,7 @@ class RunE(FileSystemEventHandler):
 
 class Interactive():
     def __init__(self, directory, name, size=256, which_model_netE='resnet_256', which_direction="BtoA",
-                 fit_boxes=None, lbl_classes=None,
+                 fit_boxes=None, fit_circles=None, lbl_classes=None,
                  walldist_condition=False, imgpos_condition=False, noise_condition=False,
                  empty_condition=False, mlabel_condition=False, metrics_condition=False,
                  metrics_mask_color=None, norm='instance', nz=8, pytorch_v2=False, dataset_mode='aligned',
@@ -288,9 +289,9 @@ class Interactive():
         self.optE = optE
         self.model = model
 
-        _thread.start_new_thread(self.go, (directory, name, size, fit_boxes))
+        _thread.start_new_thread(self.go, (directory, name, size, fit_boxes, fit_circles))
 
-    def go(self, directory, name, size, fit_boxes):
+    def go(self, directory, name, size, fit_boxes, fit_circles):
 
         print('[network %s is waiting for input]' % name)
 
@@ -298,11 +299,15 @@ class Interactive():
 
         input_folder = './input/%s/' % directory
         os.makedirs(input_folder + "val", exist_ok=True)
-        observer.schedule(RunG(self.model, self.optG, fit_boxes, directory), path=input_folder+"val/")
+        observer.schedule(
+            RunG(model=self.model, opt=self.optG, fit_boxes=fit_boxes, fit_circles=fit_circles, directory=directory),
+            path=input_folder+"val/")
 
         input_folder_e = './input/%s_e/' % directory
         os.makedirs(input_folder_e+"val", exist_ok=True)
-        observer.schedule(RunE(self.model, self.optE, directory+"_e"), path=input_folder_e+"val/")
+        observer.schedule(
+            RunE(self.model, self.optE, directory+"_e"),
+            path=input_folder_e+"val/")
         observer.start()
 
         # sleep until keyboard interrupt, then stop + rejoin the observer
@@ -350,47 +355,47 @@ class Interactive():
 #------------------------------------------#
 # latest set: (27 May):
 #------------------------------------------#
-Interactive("roof greeble labels", "r3_clabels2labels_f001_235",
-            size=512, which_model_netE='resnet_512',
-            dataset_mode='multi', fit_boxes=roof_greeble_classes,
-            empty_condition=True, metrics_condition=True, imgpos_condition=True,
-            noise_condition=True,
-            metrics_mask_color=[0, 0, 255], normalize_metrics=True)
+# Interactive("roof greeble labels", "r3_clabels2labels_f001_235",
+#             size=512, which_model_netE='resnet_512',
+#             dataset_mode='multi', fit_circles=(roof_classes, fit_roof_labels),
+#             empty_condition=True, metrics_condition=True, imgpos_condition=True,
+#             noise_condition=True,
+#             metrics_mask_color=[0, 0, 255], normalize_metrics=True)
 
-Interactive("roof", "r3_labels2image_f001_165",
-            size=512, which_model_netE='resnet_512',
-            dataset_mode='multi',
-            empty_condition=True, metrics_condition=True, imgpos_condition=True,
-            metrics_mask_color=[0, 0, 255], normalize_metrics=True)
+# Interactive("roof", "r3_labels2image_f001_165",
+#             size=512, which_model_netE='resnet_512',
+#             dataset_mode='multi',
+#             empty_condition=True, metrics_condition=True, imgpos_condition=True,
+#             metrics_mask_color=[0, 0, 255], normalize_metrics=True)
 
 Interactive("pane labels", "w3_empty2labels_f009_200",
-            dataset_mode='multi', fit_boxes=pane_classes,
+            dataset_mode='multi', fit_boxes=(pane_classes, fit_pane_labels),
             empty_condition=True, metrics_condition=True, imgpos_condition=True,
             metrics_mask_color=[255, 0, 0])
 
-Interactive("pane textures", "w3_labels2image_f013_400",
-            dataset_mode='multi',
-            empty_condition=True, metrics_condition=True, imgpos_condition=True,
-            metrics_mask_color=[255, 0, 0])
+# Interactive("pane textures", "w3_labels2image_f013_400",
+#             dataset_mode='multi',
+#             empty_condition=True, metrics_condition=True, imgpos_condition=True,
+#             metrics_mask_color=[255, 0, 0])
 
-Interactive("facade labels", "empty2windows_f009v2_210",
-            dataset_mode='multi', fit_boxes=blank_classes,
-            empty_condition=True, metrics_condition=True, imgpos_condition=True,
-            metrics_mask_color=[0, 0, 255])
+# Interactive("facade labels", "empty2windows_f009v2_210",
+#             dataset_mode='multi', fit_boxes=(blank_classes, fit_blank_labels),
+#             empty_condition=True, metrics_condition=True, imgpos_condition=True,
+#             metrics_mask_color=[0, 0, 255])
 
-Interactive("facade textures", "facade_windows_f013v2_150",
-            dataset_mode='multi',
-            empty_condition=True, metrics_condition=True, imgpos_condition=True,
-            metrics_mask_color=[0, 0, 255])
+# Interactive("facade textures", "facade_windows_f013v2_150",
+#             dataset_mode='multi',
+#             empty_condition=True, metrics_condition=True, imgpos_condition=True,
+#             metrics_mask_color=[0, 0, 255])
 
-Interactive("facade greebles", "image2clabels_f005_200",
-            dataset_mode='multi', fit_boxes=cmp_greeble_classes,
-            empty_condition=True, metrics_condition=True, mlabel_condition=True,
-            metrics_mask_color=[0, 0, 255], nz=0)
+# Interactive("facade greebles", "image2clabels_f005_200",
+#             dataset_mode='multi', fit_boxes=(cmp_classes, fit_cmp_labels),
+#             empty_condition=True, metrics_condition=True, mlabel_condition=True,
+#             metrics_mask_color=[0, 0, 255], nz=0)
 
-Interactive("facade super", "super6", pytorch_v2=True)
+# Interactive("facade super", "super6", pytorch_v2=True)
 
-Interactive("roof super", "super9", pytorch_v2=True)
+# Interactive("roof super", "super9", pytorch_v2=True)
 
 #------------------------------------------#
 

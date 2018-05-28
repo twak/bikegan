@@ -5,9 +5,14 @@ import numpy as np
 import cv2
 
 LabelClass = namedtuple('LabelClass', ['name', 'color', 'id'])
+LabelFit = namedtuple('LabelFit', ['max_count'])
 
 # image should have R,G,B, channels, if json_path is provided, boxes are written to that path
-def fit_boxes(img, classes, json_path=None):
+# boxes are stored as [xmin, xmax, ymin, ymax]
+def fit_boxes(img, classes, fit_labels=None, json_path=None):
+
+    if fit_labels is None:
+        fit_labels = {c.name:-1 for c in classes}
 
     # get index (not id) of closest class for each pixel
     class_ind = np.power(img - np.stack([c.color for c in classes]).reshape(-1, 1, 1, 3), 2).sum(axis=3).argmin(axis=0)
@@ -16,8 +21,11 @@ def fit_boxes(img, classes, json_path=None):
 
     struct_elm = np.ones((2, 2), np.uint8)
 
-    boxes = {c.name: [] for c in classes}
+    boxes = {cname: [] for cname, _ in fit_labels.items()}
     for i, c in enumerate(classes):
+        if c.name not in fit_labels:
+            continue
+
         mask = (class_ind == i).astype(np.uint8)
 
         if mask.sum() < 20:
@@ -47,10 +55,28 @@ def fit_boxes(img, classes, json_path=None):
 
             boxes[c.name].append(tuple(int(bbc) for bbc in bbox))
 
+            # # render box
+            # cv2.fillPoly(
+            #     rimg,
+            #     np.array([[[bbox[0], bbox[2]], [bbox[0], bbox[3]], [bbox[1], bbox[3]], [bbox[1], bbox[2]]]]),
+            #     c.color)
+
+    for class_name, class_boxes in boxes.items():
+        # get class
+        c = next((c for c in classes if c.name == class_name), None)
+
+        # sort boxes by area and take n largest boxes (if requested)
+        class_boxes = sorted(class_boxes, key=lambda box: (box[1]-box[0])*(box[3]-box[2]), reverse=True)
+        if fit_labels[class_name].max_count >= 0:
+            class_boxes = class_boxes[:fit_labels[class_name].max_count]
+        boxes[c.name] = class_boxes
+
+        for j, box in enumerate(class_boxes):
+
             # render box
             cv2.fillPoly(
                 rimg,
-                np.array([[[bbox[0], bbox[2]], [bbox[0], bbox[3]], [bbox[1], bbox[3]], [bbox[1], bbox[2]]]]),
+                np.array([[[box[0], box[2]], [box[0], box[3]], [box[1], box[3]], [box[1], box[2]]]]),
                 c.color)
 
     if json_path is not None:
