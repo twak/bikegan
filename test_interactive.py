@@ -133,6 +133,8 @@ class RunG(FileSystemEventHandler):
             data_loader = CreateDataLoader(self.opt)
             dataset = data_loader.load_data()
 
+            self.model.opt = self.opt
+
             for i, data in enumerate(dataset):
                 # try:
                 zs = os.path.basename(data['A_paths'][0])[:-4].split("_")[1:]
@@ -178,36 +180,41 @@ class RunE(FileSystemEventHandler):
         # do something, eg. call your function to process the image
         print("Got E event for file %s" % event.src_path)
 
-        go = os.path.abspath(os.path.join(event.src_path, os.pardir, "go"))
+        try:
 
-        if not os.path.isfile(go):
-            return
+            go = os.path.abspath(os.path.join(event.src_path, os.pardir, "go"))
 
-        with open(go) as f:
-            name = f.readlines()[0]
+            if not os.path.isfile(go):
+                return
 
-        print("starting to process %s" % self.opt.name)
+            with open(go) as f:
+                name = f.readlines()[0]
 
-        self.opt.dataroot = "./input/%s/" % self.opt.name
+            print("starting to process %s" % self.opt.name)
 
-        data_loader = CreateDataLoader(self.opt)
-        dataset = data_loader.load_data()
+            data_loader = CreateDataLoader(self.opt)
+            dataset = data_loader.load_data()
 
-        for i, data in enumerate(dataset):
-            self.model.set_input(data)
+            self.model.opt = self.opt
 
-            z = self.model.encode_real_B()
+            for i, data in enumerate(dataset):
+                self.model.set_input(data)
 
-            img_path = self.model.get_image_paths()
-            print('%04d: process image... %s' % (i, img_path))
+                z = self.model.encode_real_B()
 
-            outfile = "./output/%s/%s/%s" % (self.directory, name, "_".join([str (s) for s in z[0]]) )
-            try:
-                os.makedirs(os.path.dirname(outfile), exist_ok=True)
-            except:
-                pass
+                img_path = self.model.get_image_paths()
+                print('%04d: process image... %s' % (i, img_path))
 
-            touch (outfile)
+                outfile = "./output/%s/%s/%s" % (self.directory, name, "_".join([str (s) for s in z[0]]) )
+                try:
+                    os.makedirs(os.path.dirname(outfile), exist_ok=True)
+                except:
+                    pass
+
+                touch (outfile)
+        except Exception as e:
+            traceback.print_exc()
+            print(e)
 
         try:
             rmrf('./input/%s_e/val/*' % self.directory)
@@ -281,6 +288,12 @@ class Interactive():
         optE.dataroot = "./input/%s_e/" % directory
         optE.name = optG.name + "_e"
 
+        optE.imgpos_condition  = False
+        optE.noise_condition   = False
+        optE.mlabel_condition  = False
+        optE.metrics_condition = False
+        optE.empty_condition   = False
+
         model = create_model(optG)
         model.eval()
 
@@ -350,6 +363,7 @@ class Interactive():
 #------------------------------------------#
 # latest set: (27 May):
 #------------------------------------------#
+
 Interactive("roof greeble labels", "r3_clabels2labels_f001_235",
             size=512, which_model_netE='resnet_512',
             dataset_mode='multi', fit_boxes=roof_greeble_classes,
