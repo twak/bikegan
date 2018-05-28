@@ -369,7 +369,7 @@ Interactive("facade textures", "facade_windows_f013v2_150",
             empty_condition=True, metrics_condition=True, imgpos_condition=True,
             metrics_mask_color=[0, 0, 255])
 
-Interactive("facade greeble labels", "image2clabels_f005_200",
+Interactive("facade greebles", "image2clabels_f005_200",
             dataset_mode='multi', fit_boxes=cmp_greeble_classes,
             empty_condition=True, metrics_condition=True, mlabel_condition=True,
             metrics_mask_color=[0, 0, 255], nz=0)
