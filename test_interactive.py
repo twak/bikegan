@@ -121,15 +121,14 @@ class RunG(FileSystemEventHandler):
             if self.opt.metrics_condition or self.opt.empty_condition:
                 self.opt.empty_dataroot = self.opt.dataroot.rstrip('/\\')+'_empty'
 
+            self.model.opt = self.opt
+
             data_loader = CreateDataLoader(self.opt)
             dataset = data_loader.load_data()
 
-            self.model.opt = self.opt
 
             for i, data in enumerate(dataset):
                 # try:
-
-                print('here')
 
                 zs = os.path.basename(data['A_paths'][0])[:-4].split("_")[1:]
                 z = np.array([float(i) for i in zs], dtype=np.float32)
@@ -193,10 +192,11 @@ class RunE(FileSystemEventHandler):
 
             print("starting to process %s" % self.opt.name)
 
+            self.model.opt = self.opt
+
             data_loader = CreateDataLoader(self.opt)
             dataset = data_loader.load_data()
 
-            self.model.opt = self.opt
 
             for i, data in enumerate(dataset):
                 self.model.set_input(data)
@@ -241,7 +241,7 @@ class Interactive():
         optG.name = name
         optG.loadSize = size
         optG.fineSize = size
-        optG.nThreads = min(1, optG.nThreads)  # test code only supports nThreads=1
+        optG.nThreads = 0 # min(1, optG.nThreads)  # test code only supports nThreads=1
         optG.batchSize = 1  # test code only supports batchSize=1
         optG.serial_batches = True  # no shuffle
         optG.which_model_netE = which_model_netE
@@ -323,7 +323,7 @@ class Interactive():
             path=input_folder_e+"val/")
         observer.start()
 
-        print('[network %s is waiting for input]' % name)
+        print('[network %s is awaiting input]' % name)
 
         # sleep until keyboard interrupt, then stop + rejoin the observer
         # try:
