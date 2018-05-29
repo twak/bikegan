@@ -370,7 +370,7 @@ class Interactive():
 #------------------------------------------#
 # latest set: (29 May):
 #------------------------------------------#
-Interactive("roof greeble", "r3_clabels2labels_f001_400",
+Interactive("roof greebles", "r3_clabels2labels_f001_400",
             size=512, which_model_netE='resnet_512',
             dataset_mode='multi', fit_circles=(roof_classes, fit_roof_labels),
             empty_condition=True, metrics_condition=True, imgpos_condition=True,
