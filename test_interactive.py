@@ -124,6 +124,8 @@ class RunG(FileSystemEventHandler):
             data_loader = CreateDataLoader(self.opt)
             dataset = data_loader.load_data()
 
+            self.model.opt = self.opt
+
             for i, data in enumerate(dataset):
                 # try:
 
@@ -179,36 +181,42 @@ class RunE(FileSystemEventHandler):
         # do something, eg. call your function to process the image
         print("Got E event for file %s" % event.src_path)
 
-        go = os.path.abspath(os.path.join(event.src_path, os.pardir, "go"))
 
-        if not os.path.isfile(go):
-            return
+        try:
+            go = os.path.abspath(os.path.join(event.src_path, os.pardir, "go"))
 
-        with open(go) as f:
-            name = f.readlines()[0]
+            if not os.path.isfile(go):
+                return
 
-        print("starting to process %s" % self.opt.name)
+            with open(go) as f:
+                name = f.readlines()[0]
 
-        self.opt.dataroot = "./input/%s/" % self.opt.name
+            print("starting to process %s" % self.opt.name)
 
-        data_loader = CreateDataLoader(self.opt)
-        dataset = data_loader.load_data()
+            data_loader = CreateDataLoader(self.opt)
+            dataset = data_loader.load_data()
 
-        for i, data in enumerate(dataset):
-            self.model.set_input(data)
+            self.model.opt = self.opt
 
-            z = self.model.encode_real_B()
+            for i, data in enumerate(dataset):
+                self.model.set_input(data)
 
-            img_path = self.model.get_image_paths()
-            print('%04d: process image... %s' % (i, img_path))
+                z = self.model.encode_real_B()
 
-            outfile = "./output/%s/%s/%s" % (self.directory, name, "_".join([str (s) for s in z[0]]) )
-            try:
-                os.makedirs(os.path.dirname(outfile), exist_ok=True)
-            except:
-                pass
+                img_path = self.model.get_image_paths()
+                print('%04d: process image... %s' % (i, img_path))
 
-            touch (outfile)
+                outfile = "./output/%s/%s/%s" % (self.directory, name, "_".join([str (s) for s in z[0]]) )
+                try:
+                    os.makedirs(os.path.dirname(outfile), exist_ok=True)
+                except:
+                    pass
+
+                touch (outfile)
+
+        except Exception as e:
+            traceback.print_exc()
+            print(e)
 
         try:
             rmrf('./input/%s_e/val/*' % self.directory)
@@ -282,6 +290,13 @@ class Interactive():
         optE.dataroot = "./input/%s_e/" % directory
         optE.name = optG.name + "_e"
 
+        optE.walldist_condition = False
+        optE.imgpos_condition = False
+        optE.noise_condition = False
+        optE.mlabel_condition = False
+        optE.metrics_condition = False
+        optE.empty_condition = False
+
         model = create_model(optG)
         model.eval()
 
@@ -292,8 +307,6 @@ class Interactive():
         _thread.start_new_thread(self.go, (directory, name, size, fit_boxes, fit_circles))
 
     def go(self, directory, name, size, fit_boxes, fit_circles):
-
-        print('[network %s is waiting for input]' % name)
 
         observer = Observer()
 
@@ -309,6 +322,8 @@ class Interactive():
             RunE(self.model, self.optE, directory+"_e"),
             path=input_folder_e+"val/")
         observer.start()
+
+        print('[network %s is waiting for input]' % name)
 
         # sleep until keyboard interrupt, then stop + rejoin the observer
         # try:
@@ -395,7 +410,7 @@ Interactive("facade greebles", "image2clabels_f005_200",
 
 Interactive("facade super", "super6", pytorch_v2=True)
 
-Interactive("roof super", "super9", pytorch_v2=True)
+Interactive("roof super", "super6", pytorch_v2=True)
 
 #------------------------------------------#
 
