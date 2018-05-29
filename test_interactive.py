@@ -408,6 +408,11 @@ Interactive("facade greebles", "image2clabels_f005_200",
             empty_condition=True, metrics_condition=True, mlabel_condition=True,
             metrics_mask_color=[0, 0, 255], nz=0)
 
+# Interactive("facade greebles", "image2celabels_f001_335",
+#             dataset_mode='multi', fit_boxes=(cmp_classes, fit_cmp_labels),
+#             empty_condition=True, metrics_condition=True, mlabel_condition=True,
+#             metrics_mask_color=[0, 0, 255], nz=0)
+
 Interactive("facade super", "super6", pytorch_v2=True)
 
 Interactive("roof super", "super6", pytorch_v2=True)
