@@ -353,49 +353,49 @@ class Interactive():
 
 
 #------------------------------------------#
-# latest set: (27 May):
+# latest set: (29 May):
 #------------------------------------------#
-# Interactive("roof greeble labels", "r3_clabels2labels_f001_235",
-#             size=512, which_model_netE='resnet_512',
-#             dataset_mode='multi', fit_circles=(roof_classes, fit_roof_labels),
-#             empty_condition=True, metrics_condition=True, imgpos_condition=True,
-#             noise_condition=True,
-#             metrics_mask_color=[0, 0, 255], normalize_metrics=True)
+Interactive("roof greeble labels", "r3_clabels2labels_f001_400",
+            size=512, which_model_netE='resnet_512',
+            dataset_mode='multi', fit_circles=(roof_classes, fit_roof_labels),
+            empty_condition=True, metrics_condition=True, imgpos_condition=True,
+            noise_condition=True,
+            metrics_mask_color=[0, 0, 255], normalize_metrics=True)
 
-# Interactive("roof", "r3_labels2image_f001_165",
-#             size=512, which_model_netE='resnet_512',
-#             dataset_mode='multi',
-#             empty_condition=True, metrics_condition=True, imgpos_condition=True,
-#             metrics_mask_color=[0, 0, 255], normalize_metrics=True)
+Interactive("roof", "r3_labels2image_f001_400",
+            size=512, which_model_netE='resnet_512',
+            dataset_mode='multi',
+            empty_condition=True, metrics_condition=True, imgpos_condition=True,
+            metrics_mask_color=[0, 0, 255], normalize_metrics=True)
 
 Interactive("pane labels", "w3_empty2labels_f009_200",
             dataset_mode='multi', fit_boxes=(pane_classes, fit_pane_labels),
             empty_condition=True, metrics_condition=True, imgpos_condition=True,
             metrics_mask_color=[255, 0, 0])
 
-# Interactive("pane textures", "w3_labels2image_f013_400",
-#             dataset_mode='multi',
-#             empty_condition=True, metrics_condition=True, imgpos_condition=True,
-#             metrics_mask_color=[255, 0, 0])
+Interactive("pane textures", "w3_labels2image_f013_400",
+            dataset_mode='multi',
+            empty_condition=True, metrics_condition=True, imgpos_condition=True,
+            metrics_mask_color=[255, 0, 0])
 
-# Interactive("facade labels", "empty2windows_f009v2_210",
-#             dataset_mode='multi', fit_boxes=(blank_classes, fit_blank_labels),
-#             empty_condition=True, metrics_condition=True, imgpos_condition=True,
-#             metrics_mask_color=[0, 0, 255])
+Interactive("facade labels", "empty2windows_f009v2_400",
+            dataset_mode='multi', fit_boxes=(blank_classes, fit_blank_labels),
+            empty_condition=True, metrics_condition=True, imgpos_condition=True,
+            metrics_mask_color=[0, 0, 255])
 
-# Interactive("facade textures", "facade_windows_f013v2_150",
-#             dataset_mode='multi',
-#             empty_condition=True, metrics_condition=True, imgpos_condition=True,
-#             metrics_mask_color=[0, 0, 255])
+Interactive("facade textures", "facade_windows_f013v2_150",
+            dataset_mode='multi',
+            empty_condition=True, metrics_condition=True, imgpos_condition=True,
+            metrics_mask_color=[0, 0, 255])
 
-# Interactive("facade greebles", "image2clabels_f005_200",
-#             dataset_mode='multi', fit_boxes=(cmp_classes, fit_cmp_labels),
-#             empty_condition=True, metrics_condition=True, mlabel_condition=True,
-#             metrics_mask_color=[0, 0, 255], nz=0)
+Interactive("facade greebles", "image2clabels_f005_200",
+            dataset_mode='multi', fit_boxes=(cmp_classes, fit_cmp_labels),
+            empty_condition=True, metrics_condition=True, mlabel_condition=True,
+            metrics_mask_color=[0, 0, 255], nz=0)
 
-# Interactive("facade super", "super6", pytorch_v2=True)
+Interactive("facade super", "super6", pytorch_v2=True)
 
-# Interactive("roof super", "super9", pytorch_v2=True)
+Interactive("roof super", "super9", pytorch_v2=True)
 
 #------------------------------------------#
 
