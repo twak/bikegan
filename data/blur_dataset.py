@@ -27,27 +27,27 @@ class BlurDataset(BaseDataset):
         ac = ImageEnhance.Brightness(A)
         A = ac.enhance( 1 + random.random() * 0.6 - 0.3)
 
-        # if random.random() < 0.8:
-        #
-        #     if random.random() < 0.1:
-        #         C = Image.new("RGB", (self.opt.loadSize, self.opt.loadSize), ( int(random.random() * 30 ), int(random.random() * 30), int(random.random() * 30)))
-        #     else:
-        #         C = Image.open(random.choice ( self.AB_paths) )
-        #         C = C.resize( (self.opt.loadSize, self.opt.loadSize), Image.BICUBIC)
-        #
-        #     cc = ImageEnhance.Brightness(A)
-        #     cc.enhance(1 + random.random() * 0.3 - 0.6);
-        #
-        #     if random.random() < 0.5:
-        #         C = C.crop( ( 0,0, int ( C.size[0] * random.random()) , C.size[1] ) )
-        #
-        #     if random.random() < 0.5:
-        #         C = C.crop((0, 0, C.size[0], int(C.size[1] * random.random()) ))
-        #
-        #     if random.random() < 0.5:
-        #         A.paste(C, (0, 0))
-        #     else:
-        #         A.paste(C, (A.size[0]-C.size[0], A.size[1]-C.size[1]))
+        if random.random() < 0.8:
+
+            if random.random() < 0.1:
+                C = Image.new("RGB", (self.opt.loadSize, self.opt.loadSize), ( int(random.random() * 30 ), int(random.random() * 30), int(random.random() * 30)))
+            else:
+                C = Image.open(random.choice ( self.AB_paths) )
+                C = C.resize( (self.opt.loadSize, self.opt.loadSize), Image.BICUBIC)
+
+            cc = ImageEnhance.Brightness(C)
+            cc.enhance(1 + random.random() * 0.6 - 0.3)
+
+            if random.random() < 0.5:
+                C = C.crop( ( 0,0, int ( C.size[0] * random.random()) , C.size[1] ) )
+
+            if random.random() < 0.5:
+                C = C.crop((0, 0, C.size[0], int(C.size[1] * random.random()) ))
+
+            if random.random() < 0.5:
+                A.paste(C, (0, 0))
+            else:
+                A.paste(C, (A.size[0]-C.size[0], A.size[1]-C.size[1]))
 
         small = 2 ** random.randint(3, 5)
 

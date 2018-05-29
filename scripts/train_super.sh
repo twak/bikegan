@@ -1,11 +1,13 @@
-CLASS='super9'
+CLASS='super10'
 MODEL='bicycle_gan'
 GPU_ID=0
 DISPLAY_ID=$((GPU_ID*10+1))
 PORT=8097
 NZ=8
 
-CHECKPOINTS_DIR=./checkpoints_pub/${CLASS}/
+CHECKPOINTS_DIR=/checkpoints/${CLASS}/
+
+#CHECKPOINTS_DIR=./checkpoints_pub/${CLASS}/
 DATE=`date '+%d_%m_%Y_%H'`
 NAME=${CLASS} #_${MODEL}_${DATE}
 
@@ -17,8 +19,8 @@ LOAD_SIZE=286
 FINE_SIZE=256
 INPUT_NC=3
 
-NITER=200
-NITER_DECAY=200
+NITER=300
+NITER_DECAY=300
 SAVE_EPOCH=25
 DIRECTION='BtoA'
 
