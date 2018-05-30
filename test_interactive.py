@@ -410,7 +410,7 @@ Interactive("facade greebles", "image2clabels_f005_200",
 
 Interactive("facade super", "super6", pytorch_v2=True)
 
-Interactive("roof super", "super6", pytorch_v2=True)
+Interactive("roof super", "super10", pytorch_v2=True)
 
 #------------------------------------------#
 
