@@ -199,6 +199,9 @@ class RunE(FileSystemEventHandler):
 
 
             for i, data in enumerate(dataset):
+
+                basename = os.path.basename(data['A_paths'][0])[:-4]
+
                 self.model.set_input(data)
 
                 z = self.model.encode_real_B()
@@ -206,7 +209,7 @@ class RunE(FileSystemEventHandler):
                 img_path = self.model.get_image_paths()
                 print('%04d: process image... %s' % (i, img_path))
 
-                outfile = "./output/%s/%s/%s" % (self.directory, name, "_".join([str (s) for s in z[0]]) )
+                outfile = "./output/%s/%s/%s@%s" % (self.directory, name, basename, "_".join([str (s) for s in z[0]]) )
                 try:
                     os.makedirs(os.path.dirname(outfile), exist_ok=True)
                 except:
