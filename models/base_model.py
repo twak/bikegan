@@ -295,7 +295,8 @@ class BaseModel():
         return self.netE.forward(Variable(input_data, volatile=True))
 
     def encode_real_B(self):
-        self.z_encoded = self.encode(self.input_B)
+        # self.z_encoded = self.encode(self.input_B)
+        self.z_encoded, _ = self.netE.forward(self.input_B)
         return util.tensor2vec(self.z_encoded)
 
     def real_data(self, input=None):
