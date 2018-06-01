@@ -222,7 +222,7 @@ class RunE(FileSystemEventHandler):
             print(e)
 
         try:
-            rmrf('./input/%s_e/val/*' % self.directory)
+            rmrf('./input/%s/val/*' % self.directory)
 
             if os.path.isfile(go):
                 os.remove(go)
@@ -369,15 +369,8 @@ class Interactive():
 #             metrics_mask_color=[0, 0, 255], nz=0)
 # #------------------------------------------#
 
-
-# Interactive("facade greebles", "image2clabels_f005_200",
-#             dataset_mode='multi', fit_boxes=(cmp_classes, fit_cmp_labels),
-#             empty_condition=True, metrics_condition=True, mlabel_condition=True,
-#             metrics_mask_color=[0, 0, 255], nz=0)
-
-
 #------------------------------------------#
-# latest set: (29 May):
+# latest set
 #------------------------------------------#
 Interactive("roof greebles", "r3_clabels2labels_f001_400",
             size=512, which_model_netE='resnet_512',
@@ -413,7 +406,7 @@ Interactive("facade textures", "facade_windows_f013v2_150",
             metrics_mask_color=[0, 0, 255])
 
 Interactive("facade greebles", "image2celabels_f001_335",
-            dataset_mode='multi', fit_boxes=(cmp_classes, fit_cmp_labels),
+            dataset_mode='multi', fit_boxes=(cmp_classes, fit_cmp_labels_extended),
             empty_condition=True, metrics_condition=True, mlabel_condition=True,
             metrics_mask_color=[0, 0, 255], nz=0)
 
