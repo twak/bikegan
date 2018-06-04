@@ -417,26 +417,26 @@ Interactive("roof super", "super10", pytorch_v2=True)
 #------------------------------------------#
 
 
-#------------------------------------------#
-# Pix2Pix comparison:
-#------------------------------------------#
-Interactive("facade textures", "empty2image_p2p001",
-            dataset_mode='multi', nz=0)
-Interactive("roof", "r3_clabels2image_p2p001",
-            size=512, which_model_netE='resnet_512',
-            dataset_mode='multi', nz=0)
-#------------------------------------------#
+# #------------------------------------------#
+# # Pix2Pix comparison:
+# #------------------------------------------#
+# Interactive("facade textures", "empty2image_p2p001",
+#             dataset_mode='multi', nz=0)
+# Interactive("roof", "r3_clabels2image_p2p001",
+#             size=512, which_model_netE='resnet_512',
+#             dataset_mode='multi', nz=0)
+# #------------------------------------------#
 
 
-#------------------------------------------#
-# BicycleGAN comparison:
-#------------------------------------------#
-Interactive("facade textures", "empty2image_bg001",
-            dataset_mode='multi')
-Interactive("roof", "r3_clabels2image_bg001",
-            size=512, which_model_netE='resnet_512',
-            dataset_mode='multi')
-#------------------------------------------#
+# #------------------------------------------#
+# # BicycleGAN comparison:
+# #------------------------------------------#
+# Interactive("facade textures", "empty2image_bg001",
+#             dataset_mode='multi')
+# Interactive("roof", "r3_clabels2image_bg001",
+#             size=512, which_model_netE='resnet_512',
+#             dataset_mode='multi')
+# #------------------------------------------#
 
 print("all nets up")
 
