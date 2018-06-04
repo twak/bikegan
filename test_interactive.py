@@ -379,7 +379,7 @@ Interactive("roof greebles", "r3_clabels2labels_f001_400",
             noise_condition=True,
             metrics_mask_color=[0, 0, 255], normalize_metrics=True)
 
-Interactive("roof", "r3_labels2image_f001_400",
+Interactive("roof textures", "r3_labels2image_f001_400",
             size=512, which_model_netE='resnet_512',
             dataset_mode='multi',
             empty_condition=True, metrics_condition=True, imgpos_condition=True,
@@ -421,10 +421,10 @@ Interactive("roof super", "super10", pytorch_v2=True)
 # # Pix2Pix comparison:
 # #------------------------------------------#
 # Interactive("facade textures", "empty2image_p2p001",
-#             dataset_mode='multi', nz=0)
-# Interactive("roof", "r3_clabels2image_p2p001",
+#             dataset_mode='multi', nz=0,  pytorch_v2=True)
+# Interactive("roof textures", "r3_clabels2image_p2p001",
 #             size=512, which_model_netE='resnet_512',
-#             dataset_mode='multi', nz=0)
+#             dataset_mode='multi', nz=0, pytorch_v2=True)
 # #------------------------------------------#
 
 
@@ -432,10 +432,10 @@ Interactive("roof super", "super10", pytorch_v2=True)
 # # BicycleGAN comparison:
 # #------------------------------------------#
 # Interactive("facade textures", "empty2image_bg001",
-#             dataset_mode='multi')
-# Interactive("roof", "r3_clabels2image_bg001",
+#             dataset_mode='multi',  pytorch_v2=True)
+# Interactive("roof textures", "r3_clabels2image_bg001",
 #             size=512, which_model_netE='resnet_512',
-#             dataset_mode='multi')
+#             dataset_mode='multi',  pytorch_v2=True)
 # #------------------------------------------#
 
 print("all nets up")
