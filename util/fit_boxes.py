@@ -7,7 +7,8 @@ import cv2
 LabelClass = namedtuple('LabelClass', ['name', 'color', 'id'])
 LabelFit = namedtuple('LabelFit', ['max_count'])
 
-# image should have R,G,B, channels, if json_path is provided, boxes are written to that path
+# image should have R,G,B, channels and be of shape h x w x c
+# if json_path is provided, boxes are written to that path
 # boxes are stored as [xmin, xmax, ymin, ymax]
 def fit_boxes(img, classes, fit_labels=None, json_path=None):
 
@@ -84,3 +85,28 @@ def fit_boxes(img, classes, fit_labels=None, json_path=None):
             json.dump(boxes, json_file)
 
     return boxes, rimg
+
+if __name__ == '__main__':
+    fit_cls = [
+        LabelClass('other', [0, 0, 0], 0),  # black borders or sky (id 0)
+        LabelClass('background', [0, 0, 170], 1),  # background (id 1)
+        LabelClass('facade', [0, 0, 255], 2),  # facade (id 2)
+        LabelClass('molding', [255, 85, 0], 3),  # molding (id 3)
+        LabelClass('cornice', [0, 255, 255], 4),  # cornice (id 4)
+        LabelClass('pillar', [255, 0, 0], 5),  # pillar (id 5)
+        LabelClass('window', [0, 85, 255], 6),  # window (id 6)
+        LabelClass('door', [0, 170, 255], 7),  # door (id 7)
+        LabelClass('sill', [85, 255, 170], 8),  # sill (id 8)
+        LabelClass('blind', [255, 255, 0], 9),  # blind (id 9)
+        LabelClass('balcony', [170, 255, 85], 10),  # balcony (id 10)
+        LabelClass('shop', [170, 0, 0], 11),  # shop (id 11)
+        LabelClass('deco', [255, 170, 0], 12),  # deco (id 12)
+    ]
+
+    fit_lbls = {'facade':LabelFit(-1), 'window':LabelFit(-1), 'door':LabelFit(-1), 'sill':LabelFit(-1), 'balcony':LabelFit(-1), 'shop':LabelFit(-1), 'molding':LabelFit(-1), 'cornice':LabelFit(-1)}
+
+    img = cv2.imread('jon_b1110.png')[:, :, [2, 1, 0]]
+
+    _, rimg = fit_boxes(img=img, classes=fit_cls, fit_labels=fit_lbls)
+
+    cv2.imwrite('temp.png', rimg[:, :, [2, 1, 0]])
