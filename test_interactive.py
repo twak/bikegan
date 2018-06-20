@@ -379,7 +379,7 @@ Interactive("roof greebles", "r3_clabels2labels_f001_400",
             noise_condition=True,
             metrics_mask_color=[0, 0, 255], normalize_metrics=True)
 
-Interactive("roof", "r3_labels2image_f001_400",
+Interactive("roof textures", "r3_labels2image_f001_400",
             size=512, which_model_netE='resnet_512',
             dataset_mode='multi',
             empty_condition=True, metrics_condition=True, imgpos_condition=True,
