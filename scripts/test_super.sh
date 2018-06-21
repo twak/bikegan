@@ -1,4 +1,4 @@
-CLASS='super9'
+CLASS='super10'
 MODEL='bicycle_gan'
 
 
