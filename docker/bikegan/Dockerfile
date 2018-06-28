@@ -5,6 +5,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         git \
         unzip
 
+# needs conda! iwth pytorch 4!
+
 WORKDIR /
 RUN git clone https://github.com/twak/bikegan.git
 RUN mkdir /bikegan/checkpoints
