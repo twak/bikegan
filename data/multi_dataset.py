@@ -25,8 +25,14 @@ class MultiDataset(BaseDataset):
         # read images/data
         AB_path = self.AB_paths[index]
         AB = Image.open(AB_path).convert('RGB')
-        AB = AB.resize(
-            (self.opt.loadSize * 2, self.opt.loadSize), Image.BICUBIC)
+
+        if AB.width > AB.height:
+            AB = AB.resize(
+                (self.opt.loadSize * 2, self.opt.loadSize), Image.BICUBIC)
+        else:
+            AB = AB.resize(
+                (self.opt.loadSize, self.opt.loadSize), Image.BICUBIC)
+
         AB = transforms.ToTensor()(AB)
 
         if self.opt.mlabel_condition:
@@ -67,8 +73,13 @@ class MultiDataset(BaseDataset):
             empty_mask = transforms.ToTensor()(empty_mask)
 
         w_total = AB.size(2)
-        w = int(w_total / 2)
         h = AB.size(1)
+
+        if w_total == h:
+            w = h
+        else:
+            w = int(w_total / 2)
+
         if self.center_crop:
             w_offset = int(round((w - self.opt.fineSize) / 2.0))
             h_offset = int(round((h - self.opt.fineSize) / 2.0))
@@ -77,9 +88,13 @@ class MultiDataset(BaseDataset):
             h_offset = random.randint(0, max(0, h - self.opt.fineSize - 1))
 
         A = AB[:, h_offset:h_offset + self.opt.fineSize,
-               w_offset:w_offset + self.opt.fineSize]
-        B = AB[:, h_offset:h_offset + self.opt.fineSize,
-               w + w_offset:w + w_offset + self.opt.fineSize]
+            w_offset:w_offset + self.opt.fineSize]
+
+        if w_total == h: # not really aligned after all...but for the sake of a single codepath
+            B = A
+        else:
+            B = AB[:, h_offset:h_offset + self.opt.fineSize,
+                w + w_offset:w + w_offset + self.opt.fineSize]
 
         A = transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))(A)
         B = transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))(B)

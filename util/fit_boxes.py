@@ -91,7 +91,7 @@ if __name__ == '__main__':
         LabelClass('other', [0, 0, 0], 0),  # black borders or sky (id 0)
         LabelClass('background', [0, 0, 170], 1),  # background (id 1)
         LabelClass('facade', [0, 0, 255], 2),  # facade (id 2)
-        LabelClass('molding', [255, 85, 0], 3),  # molding (id 3)
+        LabelClass('moulding', [255, 85, 0], 3),  # moulding (id 3)
         LabelClass('cornice', [0, 255, 255], 4),  # cornice (id 4)
         LabelClass('pillar', [255, 0, 0], 5),  # pillar (id 5)
         LabelClass('window', [0, 85, 255], 6),  # window (id 6)
@@ -103,7 +103,7 @@ if __name__ == '__main__':
         LabelClass('deco', [255, 170, 0], 12),  # deco (id 12)
     ]
 
-    fit_lbls = {'facade':LabelFit(-1), 'window':LabelFit(-1), 'door':LabelFit(-1), 'sill':LabelFit(-1), 'balcony':LabelFit(-1), 'shop':LabelFit(-1), 'molding':LabelFit(-1), 'cornice':LabelFit(-1)}
+    fit_lbls = {'facade':LabelFit(-1), 'window':LabelFit(-1), 'door':LabelFit(-1), 'sill':LabelFit(-1), 'balcony':LabelFit(-1), 'shop':LabelFit(-1), 'moulding':LabelFit(-1), 'cornice':LabelFit(-1)}
 
     img = cv2.imread('jon_b1110.png')[:, :, [2, 1, 0]]
 

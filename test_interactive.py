@@ -29,7 +29,7 @@ cmp_classes = [
     LabelClass('other', [0, 0, 0], 0),  # black borders or sky (id 0)
     LabelClass('background', [0, 0, 170], 1),  # background (id 1)
     LabelClass('facade', [0, 0, 255], 2),  # facade (id 2)
-    LabelClass('molding', [255, 85, 0], 3),  # molding (id 3)
+    LabelClass('moulding', [255, 85, 0], 3),  # moulding (id 3)
     LabelClass('cornice', [0, 255, 255], 4),  # cornice (id 4)
     LabelClass('pillar', [255, 0, 0], 5),  # pillar (id 5)
     LabelClass('window', [0, 85, 255], 6),  # window (id 6)
@@ -41,7 +41,7 @@ cmp_classes = [
     LabelClass('deco', [255, 170, 0], 12),  # deco (id 12)
 ]
 fit_cmp_labels = {'window':LabelFit(-1), 'door':LabelFit(-1), 'sill':LabelFit(-1), 'balcony':LabelFit(-1), 'shop':LabelFit(-1)}
-fit_cmp_labels_extended = {'window':LabelFit(-1), 'door':LabelFit(-1), 'sill':LabelFit(-1), 'balcony':LabelFit(-1), 'shop':LabelFit(-1), 'molding':LabelFit(-1), 'cornice':LabelFit(-1)}
+fit_cmp_labels_extended = {'window':LabelFit(-1), 'door':LabelFit(-1), 'sill':LabelFit(-1), 'balcony':LabelFit(-1), 'shop':LabelFit(-1), 'moulding':LabelFit(-1), 'cornice':LabelFit(-1)}
 
 roof_classes = [
     LabelClass('other', [0, 0, 0], 0),
@@ -380,6 +380,7 @@ Interactive("roof greebles", "r3_clabels2labels_f001_400",
             metrics_mask_color=[0, 0, 255], normalize_metrics=True)
 
 Interactive("roof textures", "r3_labels2image_f001_400",
+# Interactive("roof textures", "r3_labels2image_f001_unmasked_400",
             size=512, which_model_netE='resnet_512',
             dataset_mode='multi',
             empty_condition=True, metrics_condition=True, imgpos_condition=True,
