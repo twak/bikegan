@@ -91,7 +91,8 @@ class MultiDataset(BaseDataset):
             w_offset:w_offset + self.opt.fineSize]
 
         if w_total == h: # not really aligned after all...but for the sake of a single codepath
-            B = A
+            B = AB[:, h_offset:h_offset + self.opt.fineSize,
+                w_offset:w_offset + self.opt.fineSize].clone()
         else:
             B = AB[:, h_offset:h_offset + self.opt.fineSize,
                 w + w_offset:w + w_offset + self.opt.fineSize]
