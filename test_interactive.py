@@ -21,6 +21,8 @@ from util.fit_boxes import fit_boxes, LabelClass, LabelFit
 from util.fit_circles import fit_circles
 
 import traceback
+import urllib.request
+import sys
 
 # class_names
 
@@ -230,6 +232,7 @@ class RunE(FileSystemEventHandler):
             traceback.print_exc()
             print(e)
 
+DOWNLOAD_ROOT = "http://geometry.cs.ucl.ac.uk/projects/2018/frankengan/data_s3cr3t/franken_nets"
 
 class Interactive():
     def __init__(self, directory, name, size=256, which_model_netE='resnet_256', which_direction="BtoA",
@@ -250,6 +253,11 @@ class Interactive():
         optG.which_model_netE = which_model_netE
         optG.which_direction = which_direction
         optG.pytorch_v2 = pytorch_v2
+
+        self.download_if_missing (name, "latest_net_G.pth")
+
+        if not mlabel_condition:
+            self.download_if_missing (name, "latest_net_E.pth")
 
         optG.G_path = "./checkpoints/%s/latest_net_G.pth" % optG.name
         optG.E_path = "./checkpoints/%s/latest_net_E.pth" % optG.name
@@ -337,41 +345,33 @@ class Interactive():
 
         observer.join()
 
-# #------------------------------------------#
-# # original set:
-# #------------------------------------------#
-# # Interactive ("bike_2", pytorch_v2 = True)
-# Interactive ( "roof", "roofs6", 512, 'resnet_512', pytorch_v2 = True)
-# Interactive ( "facade super", "super6", pytorch_v2 = True) # walls
-# # Interactive ("", ""super9", pytorch_v2 = True) # facades
-# Interactive ( "pane labels","dows2", pytorch_v2 = True)
-# Interactive ( "pane textures", "dows1", pytorch_v2 = True)
-# # Interactive ("blank", fit_boxes=blank_classes )
-# Interactive ( "facade labels", "empty2windows_f005", lbl_classes=cmp_classes, imgpos_condition=True, walldist_condition=True, norm='instance_track', fit_boxes=blank_classes, dataset_mode='multi')
-# # Interactive ("empty2windows_f005", lbl_classes=cmp_classes, imgpos_condition=True, walldist_condition=True, norm='instance_track', fit_boxes=blank_classes, dataset_mode='multi')
-# Interactive ( "facade textures", "facade_windows_f000", norm='instance_track', fit_boxes=blank_classes, dataset_mode='multi')
-# # Interactive ("image2clabels_f001", norm='instance_track', fit_boxes=blank_classes, nz=0, dataset_mode='multi')
-# #------------------------------------------#
+    def download_if_missing(self, directory, file):
 
+        # nets should be listed here: http://geometry.cs.ucl.ac.uk/projects/2018/frankengan/data_s3cr3t/franken_nets/
 
-# #------------------------------------------#
-# # original set with new facade texture -> greebles network:
-# #------------------------------------------#
-# Interactive("roof", "roofs6", 512, 'resnet_512', pytorch_v2 = True)
-# Interactive("facade super", "super6", pytorch_v2 = True) # walls
-# Interactive("pane labels","dows2", pytorch_v2 = True)
-# Interactive("pane textures", "dows1", pytorch_v2 = True)
-# Interactive("facade labels", "empty2windows_f005", lbl_classes=cmp_classes, imgpos_condition=True, walldist_condition=True, norm='instance_track', fit_boxes=blank_classes, dataset_mode='multi')
-# Interactive("facade textures", "facade_windows_f000", norm='instance_track', fit_boxes=blank_classes, dataset_mode='multi')
-# Interactive("facade greeble labels", "image2clabels_f005_200",
-#             dataset_mode='multi', fit_boxes=cmp_greeble_classes,
-#             empty_condition=True, mlabel_condition=True, metrics_condition=True,
-#             metrics_mask_color=[0, 0, 255], nz=0)
-# #------------------------------------------#
+        local = "./checkpoints/%s/%s" % (directory, file)
+
+        if not os.path.isfile(local):
+
+            os.makedirs( "./checkpoints/%s" % directory, exist_ok=True)
+
+            remote = "%s/%s/%s" % (DOWNLOAD_ROOT, directory, file)
+            print ("downloading %s" % remote)
+            try:
+                urllib.request.urlretrieve( remote, local )
+                print("done")
+            except Exception as e: print(e)
+
+                # print("error downloading weights from %s" % remote)
+
+            if not os.path.isfile(local):
+                sys.exit("Couldn't find or download weights for %s" % file)
 
 #------------------------------------------#
 # latest set
 #------------------------------------------#
+
+
 Interactive("roof greebles", "r3_clabels2labels_f001_400",
             size=512, which_model_netE='resnet_512',
             dataset_mode='multi', fit_circles=(roof_classes, fit_roof_labels),
@@ -410,6 +410,11 @@ Interactive("facade greebles", "image2celabels_f001_335",
             dataset_mode='multi', fit_boxes=(cmp_classes, fit_cmp_labels_extended),
             empty_condition=True, metrics_condition=True, mlabel_condition=True,
             metrics_mask_color=[0, 0, 255], nz=0)
+
+Interactive("door textures", "labels2door_4",
+            dataset_mode='multi',
+            metrics_condition=True, imgpos_condition=True,
+            metrics_mask_color=[255, 0, 0])
 
 Interactive("facade super", "super6", pytorch_v2=True)
 
