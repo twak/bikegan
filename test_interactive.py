@@ -360,7 +360,9 @@ class Interactive():
             try:
                 urllib.request.urlretrieve( remote, local )
                 print("done")
-            except Exception as e: print(e)
+            except Exception as e:
+                print(e)
+                sys.exit("Couldn't find or download weights for %s" % file)
 
                 # print("error downloading weights from %s" % remote)
 
