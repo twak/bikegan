@@ -2,7 +2,7 @@
 
 this is the fork of [BicycleGAN](https://junyanz.github.io/BicycleGAN/) which is used to train and run GANs for [FrankenGAN](http://geometry.cs.ucl.ac.uk/projects/2018/frankengan).
 
-##running
+## running
 
 requirements: 
 * nvidia GPU
@@ -14,7 +14,7 @@ requirements:
 
 alternatively, use the container on dockerhub.
 
-##cite
+## cite
 
 if you use this project, please cite [FrankenGAN](https://arxiv.org/abs/1806.07179)
 
