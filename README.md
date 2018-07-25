@@ -12,7 +12,7 @@ requirements:
 
 `test_interactive.py`, listens to the `./input` folders for new inputs, and writes them to `./output`. Once it is running, set [chordatlas](https://github.com/twak/chordatlas)' bikeGAN file location (in the settings menu) to the bikeGAN root directory (the one containing this file).
 
-alternatively, use the container on dockerhub.
+alternatively, use the [container on dockerhub](http://tba).
 
 ## cite
 
