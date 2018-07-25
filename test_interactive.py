@@ -373,6 +373,10 @@ class Interactive():
 # latest set
 #------------------------------------------#
 
+# Interactive("door textures", "labels2door_4",
+#             dataset_mode='multi',
+#             empty_condition=True, metrics_condition=True, imgpos_condition=True,
+#             metrics_mask_color=[255, 0, 0])
 
 Interactive("roof greebles", "r3_clabels2labels_f001_400",
             size=512, which_model_netE='resnet_512',
@@ -413,18 +417,11 @@ Interactive("facade greebles", "image2celabels_f001_335",
             empty_condition=True, metrics_condition=True, mlabel_condition=True,
             metrics_mask_color=[0, 0, 255], nz=0)
 
-Interactive("door textures", "labels2door_4",
-            dataset_mode='multi',
-            metrics_condition=True, imgpos_condition=True,
-            metrics_mask_color=[255, 0, 0])
-
 Interactive("facade super", "super6", pytorch_v2=True)
 
 Interactive("roof super", "super10", pytorch_v2=True)
 
 #------------------------------------------#
-
-
 # #------------------------------------------#
 # # Pix2Pix comparison:
 # #------------------------------------------#
@@ -434,8 +431,6 @@ Interactive("roof super", "super10", pytorch_v2=True)
 #             size=512, which_model_netE='resnet_512',
 #             dataset_mode='multi', nz=0, pytorch_v2=True)
 # #------------------------------------------#
-
-
 # #------------------------------------------#
 # # BicycleGAN comparison:
 # #------------------------------------------#

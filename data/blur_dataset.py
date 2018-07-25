@@ -7,6 +7,7 @@ from data.image_folder import make_dataset
 from PIL import Image
 import numpy as np
 import skimage.transform as transform
+import skimage.util as sku
 
 from PIL import ImageEnhance
 
@@ -24,8 +25,9 @@ class BlurDataset(BaseDataset):
         A = Image.open(AB_path).convert('RGB')
 
         A = A.resize( (self.opt.loadSize, self.opt.loadSize), Image.BICUBIC)
-        # ac = ImageEnhance.Brightness(A)
-        # A = ac.enhance( 1 + random.random() * 0.6 - 0.3)
+        ac = ImageEnhance.Brightness(A)
+        A = ac.enhance( 1 + random.random() * 0.6 - 0.3)
+
         # if random.random() < 0.8:
         #
         #     if random.random() < 0.1:
@@ -48,18 +50,32 @@ class BlurDataset(BaseDataset):
         #     else:
         #         A.paste(C, (A.size[0]-C.size[0], A.size[1]-C.size[1]))
 
-        small = 32#2 ** random.randint(3, 5)
-
-        B = A.resize((small, small), Image.BICUBIC)
-        B += np.random.normal(0, random.randint(3, 5), (small, small, 3))
-        B = transform.resize(B, A.size)
-
         w = A.size[1]
         h = A.size[0]
 
-        A = transforms.ToTensor()(A)
+        small = 2 ** 4#random.randint(3, 5)
+        #
+        B = A.resize((small, small), Image.BICUBIC)
+        # B = A.resize((w, h), Image.BICUBIC)
+        B += np.random.normal(0, random.randint(3, 5), (small, small, 3))
+        B /= 255 # just on thorin?!
+
+        # sku.random_noise(B, mode='gaussian', mean=0, var= 3)
+
+        # B = B.resize((w, h), Image.BICUBIC) # transform.resize(B, A.size, Image.BICUBIC)
+        B = transform.resize(B, A.size, Image.BICUBIC)
+        # print (np.mean ( B ) )
+
+
         B = transforms.ToTensor()(B).float()
-        B= B.clamp(0,1)
+
+
+        A = transforms.ToTensor()(A)
+
+        # print (B.mean() )
+        # print (A.mean() )
+
+        B = B.clamp(0,1)
 
         if self.center_crop:
             w_offset = int(round((w - self.opt.fineSize) / 2.0))
@@ -80,9 +96,9 @@ class BlurDataset(BaseDataset):
             A = A.index_select(2, idx)
             B = B.index_select(2, idx)
 
-        tiletype = random.random()
-        tileoverlap = 26
-        moverlap = self.opt.fineSize - tileoverlap
+        # tiletype = random.random()
+        # tileoverlap = 26
+        # moverlap = self.opt.fineSize - tileoverlap
 
         # if tiletype < 0.66: # blur bottom overlap
         #     B = torch.cat( ( B[:,0:moverlap,:],A[:,moverlap:self.opt.fineSize,:] ), dim = 1 )
