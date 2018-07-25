@@ -16,5 +16,5 @@ alternatively, use the container on dockerhub.
 
 ##cite
 
-if you use this project, please cite (FrankenGAN)[https://arxiv.org/abs/1806.07179]
+if you use this project, please cite [FrankenGAN](https://arxiv.org/abs/1806.07179)
 
