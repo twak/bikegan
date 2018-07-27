@@ -1,4 +1,4 @@
-CLASS='super10'
+CLASS='zoomies2'
 MODEL='bicycle_gan'
 
 
@@ -34,7 +34,7 @@ NUM_SAMPLES=10 # number of samples per input images
 # command
 CUDA_VISIBLE_DEVICES=${GPU_ID} python ./test.py \
   --sync \
-  --dataroot /media/twak/8bc5e750-9a70-4180-8eee-ced2fbba6484/data/tile1 \
+  --dataroot /media/twak/8bc5e750-9a70-4180-8eee-ced2fbba6484/data/terrain1 \
   --results_dir ${RESULTS_DIR} \
   --G_path ${G_PATH} \
   --E_path ${E_PATH} \

@@ -322,17 +322,27 @@ class Interactive():
         observer = Observer()
 
         input_folder = './input/%s/' % directory
+
+        shutil.rmtree(input_folder, ignore_errors=True)
+
         os.makedirs(input_folder + "val", exist_ok=True)
+
         observer.schedule(
             RunG(model=self.model, opt=self.optG, fit_boxes=fit_boxes, fit_circles=fit_circles, directory=directory),
             path=input_folder+"val/")
 
         input_folder_e = './input/%s_e/' % directory
+
+        shutil.rmtree(input_folder_e, ignore_errors=True)
+
         os.makedirs(input_folder_e+"val", exist_ok=True)
         observer.schedule(
             RunE(self.model, self.optE, directory+"_e"),
             path=input_folder_e+"val/")
         observer.start()
+
+        shutil.rmtree('./input/%s_empty/' % directory, ignore_errors=True)
+        shutil.rmtree('./input/%s_mlabels/' % directory, ignore_errors=True)
 
         print('[network %s is awaiting input]' % name)
 
@@ -373,10 +383,10 @@ class Interactive():
 # latest set
 #------------------------------------------#
 
-# Interactive("door textures", "labels2door_4",
-#             dataset_mode='multi',
-#             empty_condition=True, metrics_condition=True, imgpos_condition=True,
-#             metrics_mask_color=[255, 0, 0])
+Interactive("door textures", "labels2door_5",
+            dataset_mode='multi',
+            empty_condition=True, metrics_condition=True, imgpos_condition=True, normalize_metrics=True,
+            metrics_mask_color=[255, 0, 0])
 
 Interactive("roof greebles", "r3_clabels2labels_f001_400",
             size=512, which_model_netE='resnet_512',
