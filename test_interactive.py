@@ -232,7 +232,7 @@ class RunE(FileSystemEventHandler):
             traceback.print_exc()
             print(e)
 
-DOWNLOAD_ROOT = "http://geometry.cs.ucl.ac.uk/projects/2018/frankengan/data_s3cr3t/franken_nets"
+DOWNLOAD_ROOT = "http://geometry.cs.ucl.ac.uk/projects/2018/frankengan/data/franken_nets"
 
 class Interactive():
     def __init__(self, directory, name, size=256, which_model_netE='resnet_256', which_direction="BtoA",
@@ -357,7 +357,7 @@ class Interactive():
 
     def download_if_missing(self, directory, file):
 
-        # nets should be listed here: http://geometry.cs.ucl.ac.uk/projects/2018/frankengan/data_s3cr3t/franken_nets/
+        # nets should be listed here: http://geometry.cs.ucl.ac.uk/projects/2018/frankengan/data/franken_nets/
 
         local = "./checkpoints/%s/%s" % (directory, file)
 
