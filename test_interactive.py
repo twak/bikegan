@@ -259,6 +259,9 @@ class Interactive():
         if not mlabel_condition:
             self.download_if_missing (name, "latest_net_E.pth")
 
+        if "--quit" in sys.argv:
+            return
+
         optG.G_path = "./checkpoints/%s/latest_net_G.pth" % optG.name
         optG.E_path = "./checkpoints/%s/latest_net_E.pth" % optG.name
 
