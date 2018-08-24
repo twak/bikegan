@@ -50,16 +50,15 @@ RUN conda install -y pytorch=0.4.0 && conda clean -ya
 RUN chmod 777 /home/user
 
 WORKDIR /home/user
-RUN git clone https://github.com/twak/bikegan.git
+RUN git   clone https://github.com/twak/bikegan.git
 WORKDIR /home/user/bikegan
 
-RUN conda install -y pillow opencv
+RUN conda install -y pillow opencv torchvision
 RUN pip install watchdog
-RUN conda install -y torchvision
 RUN chmod +x /home/user/bikegan/test_interactive.py
 
 # download the weights into the container
-RUN python /home/user/bikegan/test_interactive.py --quit
+RUN python /home/user/bikegan/test_interactive.py --download
 
 # when someone starts the container, start 
 CMD python /home/user/bikegan/test_interactive.py

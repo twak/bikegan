@@ -259,7 +259,7 @@ class Interactive():
         if not mlabel_condition:
             self.download_if_missing (name, "latest_net_E.pth")
 
-        if "--quit" in sys.argv:
+        if "--download" in sys.argv:
             return
 
         optG.G_path = "./checkpoints/%s/latest_net_G.pth" % optG.name
@@ -448,5 +448,5 @@ Interactive("roof super", "super10", pytorch_v2=True)
 
 print("all nets up")
 
-while not "--quit" in sys.argv: # loop forever, unless just downloading weights in docker
+while not "--download" in sys.argv: # loop forever, unless just downloading weights in docker
     time.sleep(1000)
