@@ -346,13 +346,6 @@ class Interactive():
 
         print('[network %s is awaiting input]' % name)
 
-        # sleep until keyboard interrupt, then stop + rejoin the observer
-        # try:
-        #     while True:
-        #         time.sleep(1)
-        # except KeyboardInterrupt:
-        #     observer.stop()
-
         observer.join()
 
     def download_if_missing(self, directory, file):
@@ -396,7 +389,6 @@ Interactive("roof greebles", "r3_clabels2labels_f001_400",
             metrics_mask_color=[0, 0, 255], normalize_metrics=True)
 
 Interactive("roof textures", "r3_labels2image_f001_400",
-# Interactive("roof textures", "r3_labels2image_f001_unmasked_400",
             size=512, which_model_netE='resnet_512',
             dataset_mode='multi',
             empty_condition=True, metrics_condition=True, imgpos_condition=True,
@@ -453,5 +445,5 @@ Interactive("roof super", "super10", pytorch_v2=True)
 
 print("all nets up")
 
-while True:
-    time.sleep(600)
+while not "--quit" in sys.argv: # loop forever, unless just downloading weights in docker
+    time.sleep(1000)

@@ -10,7 +10,7 @@ class BaseOptions():
         self.initialized = False
 
     def initialize(self):
-        self.parser.add_argument('--dataroot', required=True, help='path to images (should have subfolders trainA, trainB, valA, valB, etc)')
+        self.parser.add_argument('--dataroot', required=False, help='path to images (should have subfolders trainA, trainB, valA, valB, etc)')
         self.parser.add_argument('--batchSize', type=int, default=2, help='input batch size')
         self.parser.add_argument('--loadSize', type=int, default=286, help='scale images to this size')
         self.parser.add_argument('--fineSize', type=int, default=256, help='then crop to this size')
@@ -62,6 +62,7 @@ class BaseOptions():
 
         self.parser.add_argument('--pytorch_v2', action='store_true', help='patch old saved dictionaries')
         self.parser.add_argument('--blur_a', type=int, default=0.0, help='width of blur applied to A')
+        self.parser.add_argument('--quit', action='store_true',  help='just load nets, dont wait')
 
         # special tasks
         self.initialized = True
