@@ -10,7 +10,7 @@ requirements:
 * visdom
 * dominate
 
-`test_interactive.py`, listens to the `./input` folders for new inputs, and writes them to `./output`. Once it is running, set [chordatlas](https://github.com/twak/chordatlas)'s bikeGAN file location (in the settings menu) to the bikeGAN root directory (the one containing this file).
+The entry point is `test_interactive.py` which listens to the `./input` folders for new inputs, and writes them to `./output`. Once it is running, set [chordatlas](https://github.com/twak/chordatlas)'s bikeGAN file location (in the settings menu) to the bikeGAN root directory (the one containing this file).
 
 alternatively, use the [container on dockerhub](http://tba).
 
