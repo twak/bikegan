@@ -1,6 +1,6 @@
 # bikeGAN
 
-this is the fork of [BicycleGAN](https://junyanz.github.io/BicycleGAN/) which is used to train and run GANs for [frankenGAN](http://geometry.cs.ucl.ac.uk/projects/2018/frankengan). the interactive system which uses these networks is [chordatlas](https://github.com/twak/chordatlas).
+this is the fork of [bicycleGAN](https://junyanz.github.io/BicycleGAN/) which is used to train and run GANs for [frankenGAN](http://geometry.cs.ucl.ac.uk/projects/2018/frankengan). the interactive system which uses these networks is [chordatlas](https://github.com/twak/chordatlas).
 
 ## running
 
