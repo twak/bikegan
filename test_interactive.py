@@ -379,6 +379,9 @@ class Interactive():
 # latest set
 #------------------------------------------#
 
+os.makedirs( "./input", exist_ok=True)
+os.makedirs( "./output", exist_ok=True)
+
 Interactive("door textures", "labels2door_5",
             dataset_mode='multi',
             empty_condition=True, metrics_condition=True, imgpos_condition=True, normalize_metrics=True,
