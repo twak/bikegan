@@ -21,11 +21,15 @@ alternatively, use the [docker container](https://hub.docker.com/r/twak/bikegan/
 if you use this project, please cite [frankenGAN](https://arxiv.org/abs/1806.07179)
 
 ```
-@misc{frankenGAN,
-  Author = {Tom Kelly and Paul Guerrero and Anthony Steed and Peter Wonka and Niloy J. Mitra},
-  Title = {FrankenGAN: Guided Detail Synthesis for Building Mass-Models Using Style-Synchonized GANs},
-  Year = {2018},
-  Eprint = {arXiv:1806.07179},
+@article{frankengan,
+  title = {FrankenGAN: Guided Detail Synthesis for Building Mass-Models Using Style-Synchonized GANs},
+  author = {Tom Kelly and Paul Guerrero and Anthony Steed and Peter Wonka and Niloy J. Mitra},
+  year = {2018},
+  journal = {{ACM} Transactions on Graphics},
+  volume = {37},
+  number = {6},
+  doi = {10.1145/3272127.3275065},
 }
+```
 ```
 
