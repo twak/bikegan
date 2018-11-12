@@ -33,5 +33,4 @@ if you use this project, please cite [frankenGAN](https://arxiv.org/abs/1806.071
   doi = {10.1145/3272127.3275065},
 }
 ```
-```
 
