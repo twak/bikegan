@@ -7,8 +7,10 @@ this is the fork of [bicycleGAN](https://junyanz.github.io/BicycleGAN/) which is
 requirements: 
 * nvidia GPU (CUDA 8+)
 * pytorch 1.4
+* watchdog
 * visdom
 * dominate
+* opencv
 
 the entry point is `test_interactive.py` which listens to the `./input` folders for new inputs, and writes them to `./output` (these folders should exist). it will download the [pre-trained model weights](http://geometry.cs.ucl.ac.uk/projects/2018/frankengan/data/franken_nets/) the first time your run it. Once it is running, set [chordatlas](https://github.com/twak/chordatlas)'s bikeGAN file location (in the settings menu) to the bikeGAN root directory (the one containing this file).
 
