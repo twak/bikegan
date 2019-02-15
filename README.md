@@ -14,9 +14,12 @@ requirements:
 
 the entry point is `test_interactive.py` which listens to the `./input` folders for new inputs, and writes them to `./output` (these folders should exist). it will download the [pre-trained model weights](http://geometry.cs.ucl.ac.uk/projects/2018/frankengan/data/franken_nets/) the first time your run it. Once it is running, set [chordatlas](https://github.com/twak/chordatlas)'s bikeGAN file location (in the settings menu) to the bikeGAN root directory (the one containing this file).
 
-alternatively, use the [docker container](https://hub.docker.com/r/twak/bikegan/) with [nvidia-docker](https://github.com/NVIDIA/nvidia-docker). Be sure to run as the same user who will add the inputs (usually this means without docker-without-sudo):
+alternatively, use the [docker container](https://hub.docker.com/r/twak/bikegan/) with [nvidia-docker](https://github.com/NVIDIA/nvidia-docker). You may need to run the container as the same user who will add the inputs (without sudo nvidia-docker):
 
-```nvidia-docker run -v $(pwd)/input:/home/user/bikegan/input -v $(pwd)/output:/home/user/bikegan/output -it --rm twak/bikegan```
+```
+mkdir input output
+nvidia-docker run -v $(pwd)/input:/home/user/bikegan/input -v $(pwd)/output:/home/user/bikegan/output -it --rm twak/bikegan
+```
 
 ## cite
 
