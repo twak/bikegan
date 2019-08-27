@@ -47,3 +47,5 @@ test/data/legacy_serialized.pt
 /.vscode/
 /input/
 /output/
+/checkpoints_old/
+*.zip
